@@ -34,7 +34,7 @@ namespace gjfish{
         void ReadLine();
         void HandlePrimitiveLine();
         void GenerateSuperSeg();
-
+        void test_brach();
     };
 
 
