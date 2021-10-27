@@ -1,0 +1,18 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+/mnt/c/Users/user1/Project/src_stable/src/gfa_reader.cc
+gfa_reader.h
+/mnt/c/Users/user1/Project/src_stable/src/gfa_reader.h
+
+/mnt/c/Users/user1/Project/src_stable/src/gfa_reader.h
+string
+-
+iostream
+-
+

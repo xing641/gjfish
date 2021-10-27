@@ -9,6 +9,7 @@ uint64_t to_bit(string str){
     return a;
 }
 
+
 void count_kmers(segment sg, HashMap *hm, int tid){
     string str = sg.str;
     string location = sg.name;
