@@ -9,33 +9,39 @@
 #include <iostream>
 #include <vector>
 namespace gjfish{
+
     struct Segment{
-        uint32_t seg_idx;
-        uint64_t seg;
+        uint32_t segIdx;
+        std::string seg;
         std::string SN;
         uint32_t SO;
         uint32_t SR;
     };
     struct Line{
-        uint32_t seg1_idx;
-        uint32_t seg2_idx;
+        uint32_t leftSegIdx;
+        uint32_t rightSegIdx;
     };
+    struct SuperSeg{
+        std::string superSeg;
+        std::string leftSeg;
+        std::string rightSeg;
+    };
+
     class GFAReader{
     public:
         std::string path;
         uint64_t size;
-        std::vector<Segment> seg;
+        std::vector<Segment> segments;
         GFAReader(std::string path);
-        void ReadGraph();
+        void Start();
 
-        void ReadSeg();
-        void HandlePrimitiveSeg();
+        void ReadSeg(std::string primitiveSeg);
+        Segment HandlePrimitiveSeg(std::string primitiveSeg);
 
-        void ReadLine();
+        void ReadLine(std::string primitiveLine);
         void HandlePrimitiveLine();
         void GenerateSuperSeg();
     };
-
 
 
 }

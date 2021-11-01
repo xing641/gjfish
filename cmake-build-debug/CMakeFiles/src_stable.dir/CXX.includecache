@@ -6,13 +6,17 @@
 
 #IncludeRegexTransform: 
 
-/mnt/c/Users/user1/Project/src_stable/src/gfa_reader.cc
-gfa_reader.h
-/mnt/c/Users/user1/Project/src_stable/src/gfa_reader.h
-
-/mnt/c/Users/user1/Project/src_stable/src/gfa_reader.h
+../src/gfa_reader.h
 string
 -
 iostream
+-
+vector
+-
+
+/mnt/c/Users/user1/Project/src_stable/src/gfa_reader.cc
+src/gfa_reader.h
+/mnt/c/Users/user1/Project/src_stable/src/src/gfa_reader.h
+fstream
 -
 
