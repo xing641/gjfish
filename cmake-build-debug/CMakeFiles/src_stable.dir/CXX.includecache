@@ -19,4 +19,6 @@ src/gfa_reader.h
 /mnt/c/Users/user1/Project/src_stable/src/src/gfa_reader.h
 fstream
 -
+sstream
+-
 
