@@ -17,10 +17,11 @@ namespace gjfish{
         uint32_t SO;
         uint32_t SR;
     };
+    // TODO 如何将leftsegIdx编码？不编码，字典树直接做~
     struct Line{
-        uint32_t leftSegIdx;
+        std::string leftSegIdx;
         bool leftStrand;
-        uint32_t rightSegIdx;
+        std::string rightSegIdx;
         bool rightStrand;
     };
     struct SuperSeg{
@@ -34,6 +35,8 @@ namespace gjfish{
         std::string path;
         uint64_t size;
         std::vector<Segment> segments;
+        std::vector<SuperSeg> superSegments;
+        std::vector<Line> lines;
         GFAReader(std::string path);
         void Start();
 
@@ -41,8 +44,8 @@ namespace gjfish{
         Segment HandlePrimitiveSeg(std::string primitiveSeg);
 
         void ReadLine(std::string primitiveLine);
-        void HandlePrimitiveLine();
-        void GenerateSuperSeg();
+        Line HandlePrimitiveLine(std::string primitiveLine);
+        SuperSeg GenerateSuperSeg(Line line);
 
         ~GFAReader();
     };
@@ -60,6 +63,7 @@ namespace gjfish{
 
     std::vector<std::string> ExtractStringInfo(std::string tmp, char delim);
     std::string ReverseComplement(std::string sequence);
+    bool judgeStrand(std::string str);
 }
 
 #endif //SRC_STABLE_GFA_READER_H

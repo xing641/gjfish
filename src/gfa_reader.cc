@@ -65,17 +65,26 @@ namespace gjfish{
     // L       MTh4001 +       MTh4502 +       0M      SR:i:0
     // L	s60647	-	s60646	+	0M(overlap)	SR:i:16	L1:i:1399(长度）	L2:i:350(长度）	cf:f:0.05
     void GFAReader::ReadLine(std::string primitiveLine) {
-        Line line;
 
+        Line line = HandlePrimitiveLine(primitiveLine);
+        lines.push_back(line);
+        // SuperSeg superSeg = GenerateSuperSeg(line);
+        // superSegments.push_back(superSeg);
+    }
+    Line GFAReader::HandlePrimitiveLine(std::string primitiveLine) {
 
         char delim = '\t';
+        std::vector<std::string> splitLine = ExtractStringInfo(primitiveLine, delim);
 
+        Line line;
+        line.leftSegIdx = splitLine[1];
+        line.leftStrand = judgeStrand(splitLine[2]);
+        line.rightSegIdx = splitLine[3];
+        line.rightStrand = judgeStrand(splitLine[4]);
 
+        return line;
     }
-    void GFAReader::HandlePrimitiveLine() {
-
-    }
-    void GFAReader::GenerateSuperSeg() {
+    SuperSeg GFAReader::GenerateSuperSeg(Line line) {
 
     }
 
@@ -96,6 +105,11 @@ namespace gjfish{
             res[n - i - 1] = REVERSE_TABLE[sequence[i]];
         }
         return res;
+    }
+
+    bool judgeStrand(std::string str){
+        if (str[0] == '+') return 1;
+        else if (str[0] == '-') return 0;
     }
 
 }
