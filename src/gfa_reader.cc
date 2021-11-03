@@ -25,7 +25,7 @@ namespace gjfish{
             if (gfaFileLine[0] == 'S'){
                 ReadSeg(gfaFileLine);
             } else if (gfaFileLine[0] == 'L'){
-                ReadLine(gfaFileLine);
+                // ReadLine(gfaFileLine);
             }
         }
     }
@@ -67,7 +67,7 @@ namespace gjfish{
     void GFAReader::ReadLine(std::string primitiveLine) {
         Line line;
 
-        line.leftSegIdx =;
+
         char delim = '\t';
 
 
@@ -101,7 +101,7 @@ namespace gjfish{
 }
 int main()
 {
-    gjfish::GFAReader *reader = new gjfish::GFAReader("../data/MT.gfa");
+    gjfish::GFAReader *reader = new gjfish::GFAReader("../test/MT.gfa");
     reader->Start();
     return 0;
 }
