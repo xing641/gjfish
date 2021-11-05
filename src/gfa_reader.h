@@ -8,6 +8,7 @@
 #include <string>
 #include <iostream>
 #include <vector>
+#include <map>
 namespace gjfish{
 
     struct Segment{
@@ -37,6 +38,7 @@ namespace gjfish{
         std::vector<Segment> segments;
         std::vector<SuperSeg> superSegments;
         std::vector<Line> lines;
+        std::multimap<std::string, std::string> multimapLines;
         GFAReader(std::string path);
         void Start();
 
@@ -45,7 +47,9 @@ namespace gjfish{
 
         void ReadLine(std::string primitiveLine);
         Line HandlePrimitiveLine(std::string primitiveLine);
-        SuperSeg GenerateSuperSeg(Line line);
+
+        void GenerateSuperSeg();
+        SuperSeg DFSLines(Line line);
 
         ~GFAReader();
     };

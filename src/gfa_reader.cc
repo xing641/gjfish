@@ -82,7 +82,17 @@ namespace gjfish{
 
         return line;
     }
-    SuperSeg GFAReader::GenerateSuperSeg(Line line) {
+
+    void GFAReader::GenerateSuperSeg() {
+        for (Line line : lines) {
+            SuperSeg sseg = DFSLines(line);
+            superSegments.push_back(sseg);
+        }
+    }
+
+    SuperSeg GFAReader::DFSLines(Line line) {
+
+
 
     }
 
@@ -106,8 +116,11 @@ namespace gjfish{
     }
 
     bool judgeStrand(std::string str){
-        if (str[0] == '+') return 1;
-        else if (str[0] == '-') return 0;
+        if (str[0] == '+')
+            return 1;
+        else if (str[0] == '-')
+            return 0;
+        return 0;
     }
 
 }
