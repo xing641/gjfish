@@ -25,7 +25,7 @@ namespace gjfish{
             if (gfaFileLine[0] == 'S'){
                 ReadSeg(gfaFileLine);
             } else if (gfaFileLine[0] == 'L'){
-                ReadLine(gfaFileLine);
+                // ReadLine(gfaFileLine);
             }
         }
     }
@@ -65,12 +65,14 @@ namespace gjfish{
     // L       MTh4001 +       MTh4502 +       0M      SR:i:0
     // L	s60647	-	s60646	+	0M(overlap)	SR:i:16	L1:i:1399(长度）	L2:i:350(长度）	cf:f:0.05
     void GFAReader::ReadLine(std::string primitiveLine) {
+
         Line line = HandlePrimitiveLine(primitiveLine);
         lines.push_back(line);
         // SuperSeg superSeg = GenerateSuperSeg(line);
         // superSegments.push_back(superSeg);
     }
     Line GFAReader::HandlePrimitiveLine(std::string primitiveLine) {
+
         char delim = '\t';
         std::vector<std::string> splitLine = ExtractStringInfo(primitiveLine, delim);
 
@@ -126,7 +128,7 @@ namespace gjfish{
 }
 int main()
 {
-    gjfish::GFAReader *reader = new gjfish::GFAReader("../data/MT.gfa");
+    gjfish::GFAReader *reader = new gjfish::GFAReader("../test/MT.gfa");
     reader->Start();
     return 0;
 }
