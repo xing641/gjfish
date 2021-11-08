@@ -87,12 +87,16 @@ namespace gjfish{
 
     void GFAReader::GenerateSuperSeg() {
         for (Line line : lines) {
-            SuperSeg sseg = DFSLines(line);
-            superSegments.push_back(sseg);
+            Segment startSeg = segments[line.rightSegIdx];
+            if (!isVisited(startSeg)) {
+                SuperSeg sseg = DFSLines(startSeg);
+                if (sseg != NULL)
+                    superSegments.push_back(sseg);
+            }
         }
     }
 
-    SuperSeg GFAReader::DFSLines(Line line) {
+    SuperSeg GFAReader::DFSLines(Segment seg) {
 
 
 
