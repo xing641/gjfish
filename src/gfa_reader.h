@@ -9,48 +9,50 @@
 #include <iostream>
 #include <vector>
 #include <map>
+#include <unordered_map>
 namespace gjfish{
 
     struct Segment{
-        uint32_t segIdx;
+        std::string segIdx;
         std::string seq;
         std::string SN;
         uint32_t SO;
         uint32_t SR;
+        bool isVisited[2] = {false, false}; // 0表示负，1表示正
     };
     // TODO 如何将leftsegIdx编码？不编码，字典树直接做~
     struct Line{
-        std::string leftSegIdx;
-        bool leftStrand;
-        std::string rightSegIdx;
-        bool rightStrand;
-    };
-    struct SuperSeg{
-        std::string superSeg;
         std::string leftSeg;
         std::string rightSeg;
     };
+    struct SuperSegFragment{
+        std::string seg;
+        std::string SN;
+        std::string SR;
+        std::string SO;
+    };
 
+    typedef std::vector<SuperSegFragment> SuperSeg;
     class GFAReader{
     public:
         std::string path;
         uint64_t size;
-        std::vector<Segment> segments;
+
         std::vector<SuperSeg> superSegments;
-        std::vector<Line> lines;
-        std::multimap<std::string, std::string> multimapLines;
+        std::multimap<std::string, std::string> lines;
+        std::unordered_map<std::string, Segment> segments;
 
         GFAReader(std::string path);
         void Start();
 
-        void ReadSeg(std::string primitiveSeg);
-        Segment HandlePrimitiveSeg(std::string primitiveSeg);
+        void ReadSeg(const std::string& primitiveSeg);
+        static Segment HandlePrimitiveSeg(const std::string& primitiveSeg);
 
-        void ReadLine(std::string primitiveLine);
-        Line HandlePrimitiveLine(std::string primitiveLine);
+        void ReadLine(const std::string& primitiveLine);
+        static Line HandlePrimitiveLine(const std::string& primitiveLine);
 
         void GenerateSuperSeg();
-        SuperSeg DFSLines(Segment seg);
+        SuperSeg DFSLines(const std::string &seg);
 
         ~GFAReader();
     };
@@ -66,7 +68,7 @@ namespace gjfish{
             112, 113, 114, 115,    97, 97, 118, 119,    120, 121, 122, 123,  124, 125, 126, 127,
     };
 
-    std::vector<std::string> ExtractStringInfo(std::string tmp, char delim);
+    std::vector<std::string> ExtractStringInfo(const std::string& tmp, char delim);
     std::string ReverseComplement(std::string sequence);
     bool judgeStrand(std::string str);
 }
