@@ -87,28 +87,87 @@ namespace gjfish{
     void GFAReader::GenerateSuperSeg() {
         for (auto& it : segments) {
             if (!it.second.isVisited[0]) {
-                std::string startSeg = it.second.segIdx + "-";
-                SuperSeg sseg = DFSLines(startSeg);
-                if (!sseg.empty())
-                    superSegments.push_back(sseg);
+                std::string startSeg = it.second.segIdx;
+                StartDFSLines(startSeg, 0);
                 it.second.isVisited[0] = true;
             }
             if (!it.second.isVisited[1]) {
-                std::string startSeg = it.second.segIdx + "+";
-                SuperSeg sseg = DFSLines(startSeg);
-                if (!sseg.empty())
-                    superSegments.push_back(sseg);
+                std::string startSeg = it.second.segIdx;
+                StartDFSLines(startSeg, 1);
                 it.second.isVisited[1] = true;
             }
         }
     }
 
-    SuperSeg GFAReader::DFSLines(const std::string& seg) {
-
-
-
-
+    void GFAReader::StartDFSLines(const std::string& segIdx, const int& strand) {
+        if (!segments[segIdx].isVisited[strand]) {
+            SuperSeg sseg;
+            SuperSegFragment ssegFrag = ExtractSsegFragment(segIdx + STRAND_CHAR[strand]);
+            if (HasNextSeg(ssegFrag)){
+                sseg.push_back(ssegFrag);
+                DFSLines(sseg);
+            }
+        }
     }
+
+    void GFAReader::DFSLines(SuperSeg &startSseg) {
+
+        auto range = lines.equal_range(startSseg[startSseg.size() - 1].segIdx + startSseg[startSseg.size() - 1].strand);
+        if (range.first == range.second){
+            if (IsNewSS(startSseg)){
+                superSegments.push_back(startSseg);
+                VisitedSeg(startSseg);
+            }
+            return;
+        }
+        for (auto it = range.first; it != range.second; it++) {
+            SuperSegFragment ssegFrag = ExtractSsegFragment(it->second);
+            startSseg.push_back(ssegFrag);
+            if (segments[ssegFrag.segIdx].isVisited[(ssegFrag.strand == "+")? 1 : 0] || ssegFrag.seq.size() >= k) {
+                if (IsNewSS(startSseg)){
+                    superSegments.push_back(startSseg);
+                    VisitedSeg(startSseg);
+                }
+            } else {
+                DFSLines(startSseg);
+            }
+            startSseg.pop_back();
+        }
+    }
+
+    SuperSegFragment GFAReader::ExtractSsegFragment(std::string segSignIdx) {
+        SuperSegFragment ssegFrag;
+        ssegFrag.strand = segSignIdx[segSignIdx.length() - 1];
+        segSignIdx.pop_back();
+        ssegFrag.seq = segments[segSignIdx].seq;
+        ssegFrag.segIdx = segments[segSignIdx].segIdx;
+        ssegFrag.SN = segments[segSignIdx].SN;
+        ssegFrag.SO = std::to_string(segments[segSignIdx].SO);
+        ssegFrag.SR = std::to_string(segments[segSignIdx].SR);
+        return ssegFrag;
+    }
+
+    bool GFAReader::HasNextSeg(SuperSegFragment ssf) {
+        auto range = lines.equal_range(ssf.segIdx + ssf.strand);
+        if (range.first == range.second) return false;
+        else return true;
+    }
+
+    bool GFAReader::IsNewSS(SuperSeg ss){
+        int len = 0;
+        for (auto ssf: ss) {
+            len += ssf.seq.length();
+        }
+        if (len >= k) return true;
+        else return false;
+    }
+
+    void GFAReader::VisitedSeg(SuperSeg ss) {
+        for (auto ssf : ss) {
+            segments[ssf.seq].isVisited[(ssf.strand=="+")?1:0] = true;
+        }
+    }
+
     // L	s22457	+	s93424	+	0M	SR:i:2	L1:i:43348	L2:i:313	cf:f:0.65 (1, 0.65)
     // L	s148609	+	s130193	+	0M	SR:i:21	L1:i:665	L2:i:283	cf:f:0.15 (0.15, 0.2)
     // L	s148592	+	s85632	-	0M	SR:i:21	L1:i:1702	L2:i:1965	cf:f:0.05 (0.05  0.95)
@@ -136,6 +195,7 @@ int main()
 {
     gjfish::GFAReader *reader = new gjfish::GFAReader("../test/MT.gfa");
     reader->Start();
+    reader->GenerateSuperSeg();
     return 0;
 }
 

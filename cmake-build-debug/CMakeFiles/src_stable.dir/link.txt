@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/src_stable.dir/src/gfa_reader.cc.o  -o src_stable 

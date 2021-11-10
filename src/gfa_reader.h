@@ -26,10 +26,12 @@ namespace gjfish{
         std::string rightSeg;
     };
     struct SuperSegFragment{
-        std::string seg;
+        std::string segIdx;
+        std::string seq;
         std::string SN;
         std::string SR;
         std::string SO;
+        std::string strand;
     };
 
     typedef std::vector<SuperSegFragment> SuperSeg;
@@ -52,8 +54,12 @@ namespace gjfish{
         static Line HandlePrimitiveLine(const std::string& primitiveLine);
 
         void GenerateSuperSeg();
-        SuperSeg DFSLines(const std::string &seg);
-
+        void StartDFSLines(const std::string &segIdx, const int& strand);
+        void DFSLines(SuperSeg& startSseg);
+        SuperSegFragment ExtractSsegFragment(std::string segSignIdx);
+        bool HasNextSeg(SuperSegFragment ssf);
+        bool IsNewSS(SuperSeg ss);
+        void VisitedSeg(SuperSeg ss);
         ~GFAReader();
     };
 
@@ -67,6 +73,9 @@ namespace gjfish{
             96, 116, 98, 103,      100, 101, 102, 99,   104, 105, 106, 107,  108, 109, 110, 111,
             112, 113, 114, 115,    97, 97, 118, 119,    120, 121, 122, 123,  124, 125, 126, 127,
     };
+    uint32_t k = 600;
+
+    const char STRAND_CHAR[2] = {'-', '+'};
 
     std::vector<std::string> ExtractStringInfo(const std::string& tmp, char delim);
     std::string ReverseComplement(std::string sequence);
