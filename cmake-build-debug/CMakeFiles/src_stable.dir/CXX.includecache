@@ -1,0 +1,28 @@
+#IncludeRegexLine: ^[ 	]*[#%][ 	]*(include|import)[ 	]*[<"]([^">]+)([">])
+
+#IncludeRegexScan: ^.*$
+
+#IncludeRegexComplain: ^$
+
+#IncludeRegexTransform: 
+
+../src/gfa_reader.h
+string
+-
+iostream
+-
+vector
+-
+map
+-
+unordered_map
+-
+
+/mnt/c/Users/user1/Project/src_stable/src/gfa_reader.cc
+src/gfa_reader.h
+/mnt/c/Users/user1/Project/src_stable/src/src/gfa_reader.h
+fstream
+-
+sstream
+-
+

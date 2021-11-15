@@ -24,4 +24,6 @@ include_directories(src)
 #        test.hpp)
 add_executable(src_stable
         src/gfa_reader.h
-        src/gfa_reader.cc)
+        src/gfa_reader.cc
+        src/kmer_counter.h
+        src/kmer_counter.cc)

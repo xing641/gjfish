@@ -168,6 +168,31 @@ namespace gjfish{
         }
     }
 
+    void GFAReader::SaveSuperSeg(std::string savePath) {
+        std::fstream file;
+        file.open(savePath, std::ios::out);
+        if (!file.is_open()){
+            std::cout << "Open fail!" << std::endl;
+        }
+        int count_3 = 0, count_big = 0, count_all = 0;
+        for (auto ss: superSegments) {
+//            for (auto ssf: ss) {
+//                file.write((const char*)&ssf, sizeof(SuperSegFragment));
+//            }
+            count_all++;
+            if ( ss.size() == 3 ) count_3++;
+            if ( ss.size() > 3 ) count_big++;
+            for (auto ssf: ss) {
+                file << SsfToString(ssf) << "\n";
+            }
+            file << "\n----------------\n";
+        }
+        file << "总共生成的ss数量：" << count_all << ".\n";
+        file << "生成等于2的ss数量：" << count_all - count_3 - count_big << ".\n";
+        file << "生成等于3的ss数量：" << count_3 << ".\n";
+        file << "生成大于3的ss数量：" << count_big << ".\n";
+    }
+
     // L	s22457	+	s93424	+	0M	SR:i:2	L1:i:43348	L2:i:313	cf:f:0.65 (1, 0.65)
     // L	s148609	+	s130193	+	0M	SR:i:21	L1:i:665	L2:i:283	cf:f:0.15 (0.15, 0.2)
     // L	s148592	+	s85632	-	0M	SR:i:21	L1:i:1702	L2:i:1965	cf:f:0.05 (0.05  0.95)
@@ -190,10 +215,14 @@ namespace gjfish{
         return res;
     }
 
+    std::string SsfToString(SuperSegFragment ssf) {
+        return ssf.segIdx + " " + ssf.strand + " " + ssf.seq + " SR:i:" + ssf.SR + " SO:i:" + ssf.SO + " SN:Z:" + ssf.SN;
+    }
+
 }
 int main()
 {
-    gjfish::GFAReader *reader = new gjfish::GFAReader("../test/MT.gfa");
+    gjfish::GFAReader *reader = new gjfish::GFAReader("../data/GRCh38-20-0.10b.gfa");
     reader->Start();
     reader->GenerateSuperSeg();
     return 0;
