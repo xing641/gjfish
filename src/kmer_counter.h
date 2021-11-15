@@ -4,11 +4,20 @@
 
 #ifndef SRC_STABLE_KMER_PRODUCER_H
 #define SRC_STABLE_KMER_PRODUCER_H
+
+#include "gfa_reader.h"
+
 namespace gjfish {
+    struct Kmer {
+        std::string sequence;
+        std::string seg_idx;
+        uint32_t seg_start_site;
+    };
     class KmerCounter {
     public:
+        GFAReader *gfa_reader;
         // 计算kmer
-        void StartCounter();
+        void StartCount(GFAReader& reader);
 
         // 1. 初始化哈希表
         void InitialHashTable();
@@ -24,6 +33,7 @@ namespace gjfish {
         void CountKmerFromSeg();
         // 3. 从superseg中生成kmer并计算
         void CountKmerFromSuperSeg();
+        std::vector<Kmer> ProduceKmerFromSuperSeg(SuperSeg ss);
 
     };
 }
