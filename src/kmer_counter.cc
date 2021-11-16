@@ -12,6 +12,7 @@ namespace gjfish {
         CountKmerFromSeg();
     }
 
+    // TODO kmer需要考虑方向
     void KmerCounter::CountKmerFromSeg() {
         for (auto it: gfa_reader->segments){
             if (it.second.seq.size() >= k) {

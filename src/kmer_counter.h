@@ -12,6 +12,7 @@ namespace gjfish {
         std::string sequence;
         std::string seg_idx;
         uint32_t seg_start_site;
+        uint32_t strand;
     };
     class KmerCounter {
     public:
@@ -24,6 +25,7 @@ namespace gjfish {
 
         /*
          * Q1: 2和3能不能同时进行？
+         *
          * A1： 肯定可以！
          * Q2： 当2或3其中一个停止对hashtable的统计有没有影响？
          * A2： 肯定不能有！
