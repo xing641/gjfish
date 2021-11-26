@@ -2,12 +2,14 @@
 // Created by user1 on 2021/11/15.
 //
 
-#ifndef SRC_STABLE_KMER_PRODUCER_H
-#define SRC_STABLE_KMER_PRODUCER_H
+#ifndef SRC_STABLE_KMER_COUNTER_H
+#define SRC_STABLE_KMER_COUNTER_H
 
 #include "gfa_reader.h"
 
 namespace gjfish {
+
+    // strand 0表示负，1表示正
     struct Kmer {
         std::string sequence;
         std::string seg_idx;
@@ -39,4 +41,4 @@ namespace gjfish {
 
     };
 }
-#endif //SRC_STABLE_KMER_PRODUCER_H
+#endif //SRC_STABLE_KMER_COUNTER_H

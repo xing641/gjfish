@@ -6,7 +6,8 @@
 namespace gjfish {
     void KmerCounter::StartCount(GFAReader& reader){
         gfa_reader = &reader;
-        InitialHashTable();
+
+        //TODO 初始化哈希表 InitialHashTable();
         //TODO 这里需要并发
         CountKmerFromSuperSeg();
         CountKmerFromSeg();
@@ -21,7 +22,7 @@ namespace gjfish {
                     kmer.sequence = it.second.seq.substr(i, k);
                     kmer.seg_idx = it.second.segIdx;
                     kmer.seg_start_site = i;
-                    HashCount(kmer);
+                    // HashCount(kmer);
                 }
             }
         }
@@ -31,7 +32,7 @@ namespace gjfish {
         for (auto it: gfa_reader->superSegments){
             std::vector<Kmer> kmers = ProduceKmerFromSuperSeg(it);
             for (auto kmer: kmers) {
-                HashCount(kmer);
+                // HashCount(kmer);
             }
         }
     }
