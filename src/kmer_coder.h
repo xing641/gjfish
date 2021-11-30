@@ -13,7 +13,11 @@ namespace gjfish {
         uint64_t site;
         uint64_t* kmer;
         CompressedKmer(uint64_t width) {
+            //TODO 需要一个malloc来进行分配内存
             kmer = (uint64_t* )malloc(sizeof(uint64_t) * width);
+            for (int i = 0; i < width; i++) {
+                kmer[i] = 0;
+            }
         }
         ~CompressedKmer(){
             delete kmer;
@@ -23,11 +27,24 @@ namespace gjfish {
     class Coder{
     public:
         CompressedKmer Encode(Kmer kmer);
-        uint64_t EncodeSite(Kmer kmer);
-        uint64_t* EncodeKmer(Kmer kmer);
+        void EncodeSite(Kmer kmer, CompressedKmer& compressed_kmer);
+        void EncodeKmer(Kmer kmer, CompressedKmer& compressed_kmer);
         Kmer Decode(CompressedKmer compressed_kmer);
-        std::string DecodeSeq(uint64_t* compressed_seq);
+        std::string DecodeKmer(uint64_t* compressed_seq);
     };
+    // A: C: G: T = 0: 1: 2: 3;
+    const uint64_t ENCODE_MER_TABLE[128] = {
+            4, 4, 4, 4,        4, 4, 4, 4,      4, 4, 4, 4,      4, 4, 4, 4,
+            4, 4, 4, 4,        4, 4, 4, 4,      4, 4, 4, 4,      4, 4, 4, 4,
+            4, 4, 4, 4,        4, 4, 4, 4,      4, 4, 4, 4,      4, 4, 4, 4,
+            4, 4, 4, 4,        4, 4, 4, 4,      4, 4, 4, 4,      4, 4, 4, 4,
+            4, 0, 4, 1,        4, 4, 4, 2,      4, 4, 4, 4,      4, 4, 4, 4,
+            4, 4, 4, 4,        3, 3, 4, 4,      4, 4, 4, 4,      4, 4, 4, 4,
+            4, 0, 4, 1,        4, 4, 4, 2,      4, 4, 4, 4,      4, 4, 4, 4,
+            4, 4, 4, 4,        3, 3, 4, 4,      4, 4, 4, 4,      4, 4, 4, 4,
+    };
+
+    const char DECODE_MER_TABLE[4] = {65, 67, 71, 84};
 }
 
 #endif //SRC_STABLE_KMER_CODER_H
