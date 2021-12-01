@@ -6,9 +6,13 @@
 #define SRC_STABLE_KMER_COUNTER_H
 
 #include "gfa_reader.h"
+#include "lockfree_hash_map.h"
 
 namespace gjfish {
 
+    class Coder;
+    class GFAReader;
+    class LockFreeHashTable;
     // strand 0表示负，1表示正
     struct Kmer {
         std::string sequence;
@@ -19,8 +23,10 @@ namespace gjfish {
     class KmerCounter {
     public:
         GFAReader *gfa_reader;
+        LockFreeHashTable *ht;
+        Coder* coder;
         // 计算kmer
-        void StartCount(GFAReader& reader);
+        void StartCount(GFAReader* reader);
 
         // 1. 初始化哈希表
         void InitialHashTable();

@@ -8,28 +8,21 @@
 #include "kmer_counter.h"
 
 namespace gjfish {
-    // seg_idx + start_site + strand
+    class Kmer;
+    // seg_idx + start_site + strand, size = 16
     struct CompressedKmer{
         uint64_t site;
         uint64_t* kmer;
-        CompressedKmer(uint64_t width) {
-            //TODO 需要一个malloc来进行分配内存
-            kmer = (uint64_t* )malloc(sizeof(uint64_t) * width);
-            for (int i = 0; i < width; i++) {
-                kmer[i] = 0;
-            }
-        }
-        ~CompressedKmer(){
-            delete kmer;
-        }
+        CompressedKmer(uint64_t width);
+        ~CompressedKmer();
     };
     // 将kmer -> compressedkmer
     class Coder{
     public:
-        CompressedKmer Encode(Kmer kmer);
-        void EncodeSite(Kmer kmer, CompressedKmer& compressed_kmer);
-        void EncodeKmer(Kmer kmer, CompressedKmer& compressed_kmer);
-        Kmer Decode(CompressedKmer compressed_kmer);
+        CompressedKmer *Encode(Kmer &kmer);
+        void EncodeSite(Kmer &kmer, CompressedKmer* compressed_kmer);
+        void EncodeKmer(Kmer &kmer, CompressedKmer* compressed_kmer);
+        Kmer Decode(CompressedKmer& compressed_kmer);
         std::string DecodeKmer(uint64_t* compressed_seq);
     };
     // A: C: G: T = 0: 1: 2: 3;

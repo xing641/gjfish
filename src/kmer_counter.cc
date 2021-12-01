@@ -4,11 +4,23 @@
 #include "kmer_counter.h"
 
 namespace gjfish {
-    void KmerCounter::StartCount(GFAReader& reader){
-        gfa_reader = &reader;
+    CompressedKmer::CompressedKmer(uint64_t width) {
+        //TODO 需要一个malloc来进行分配内存
+        kmer = (uint64_t* )malloc(sizeof(uint64_t) * width);
+        for (int i = 0; i < width; i++) {
+            kmer[i] = 0;
+        }
+    }
+    CompressedKmer::~CompressedKmer(){
+        delete kmer;
+    }
+    void KmerCounter::StartCount(GFAReader* reader){
+        gfa_reader = reader;
 
         //TODO 初始化哈希表 InitialHashTable();
         //TODO 这里需要并发
+        ht = new gjfish::LockFreeHashTable(300);
+
         CountKmerFromSuperSeg();
         CountKmerFromSeg();
     }
@@ -22,7 +34,7 @@ namespace gjfish {
                     kmer.sequence = it.second.seq.substr(i, k);
                     kmer.seg_idx = it.second.segIdx;
                     kmer.seg_start_site = i;
-                    // HashCount(kmer);
+                    ht->add_kmer(coder->Encode(kmer));
                 }
             }
         }
@@ -32,7 +44,7 @@ namespace gjfish {
         for (auto it: gfa_reader->superSegments){
             std::vector<Kmer> kmers = ProduceKmerFromSuperSeg(it);
             for (auto kmer: kmers) {
-                // HashCount(kmer);
+                ht->add_kmer(coder->Encode(kmer));
             }
         }
     }
