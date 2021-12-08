@@ -77,17 +77,17 @@ namespace gjfish{
 
 }
 
-int main()
-{
-    auto *reader = new gjfish::GFAReader("../test/MT.gfa");
-    reader->Start();
-    reader->GenerateSuperSeg();
-    auto *counter = new gjfish::KmerCounter();
-    counter->StartCount(reader);
-    for (int i = 0; i < counter->ht->prime; i++) {
-        if(counter->ht->ht[i] != nullptr){
-            std::cout << counter->ht->ht[i]->kmer << std::endl;
-        }
-    }
-    return 0;
-}
+//int main()
+//{
+//    auto *reader = new gjfish::GFAReader("../test/MT.gfa");
+//    reader->Start();
+//    reader->GenerateSuperSeg();
+//    auto *counter = new gjfish::KmerCounter();
+//    counter->StartCount(reader);
+//    for (int i = 0; i < counter->ht->prime; i++) {
+//        if(counter->ht->ht[i] != nullptr){
+//            std::cout << counter->ht->ht[i]->kmer << std::endl;
+//        }
+//    }
+//    return 0;
+//}
