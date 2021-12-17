@@ -5,10 +5,12 @@
 #include "src/gfa_reader.h"
 #include <fstream>
 #include <sstream>
+#include <utility>
 
 
 namespace gjfish{
-    GFAReader::GFAReader(std::string path) : path(path){};
+    GFAReader::GFAReader(std::string path) : path(std::move(path)){}
+    GFAReader::~GFAReader() = default;
 
     void GFAReader::Start() {
         std::fstream file;
@@ -227,12 +229,12 @@ namespace gjfish{
 //    reader->GenerateSuperSeg();
 //    int max_seq_size = 0; // max_size = 30092626 << 2^32
 //    int total_num = 0; // total_num = 192458 << 2^32
-////    for(auto it : reader->segments) {
-////        if (it.second.seq.size() > max_seq_size) max_seq_size = it.second.seq.size();
-////        total_num++;
-////    }
-////    std::cout << "Max_seq_size: " << max_seq_size << std::endl;
-////    std::cout << "Total_num: " << total_num << std::endl;
+//    for(auto it : reader->segments) {
+//        if (it.second.seq.size() > max_seq_size) max_seq_size = it.second.seq.size();
+//        total_num++;
+//    }
+//    std::cout << "Max_seq_size: " << max_seq_size << std::endl;
+//    std::cout << "Total_num: " << total_num << std::endl;
 //    return 0;
 //}
 

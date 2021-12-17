@@ -14,12 +14,13 @@ namespace gjfish {
     CompressedKmer::~CompressedKmer(){
         delete kmer;
     }
-    void KmerCounter::StartCount(GFAReader* reader){
-        gfa_reader = reader;
+    KmerCounter::KmerCounter(MemAllocator* ma, GFAReader* gfa_reader) : ma(ma), gfa_reader(gfa_reader){}
+
+    void KmerCounter::StartCount(){
 
         //TODO 初始化哈希表 InitialHashTable();
         //TODO 这里需要并发
-        ht = new gjfish::LockFreeHashTable(300);
+        ht = new gjfish::LockFreeHashTable(300, ma);
 
         CountKmerFromSuperSeg();
         CountKmerFromSeg();
@@ -74,6 +75,11 @@ namespace gjfish {
             }
         }
         return kmers;
+    }
+    KmerCounter::~KmerCounter(){
+        delete gfa_reader;
+        delete ht;
+        delete coder;
     }
 
 }

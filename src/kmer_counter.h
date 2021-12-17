@@ -7,12 +7,14 @@
 
 #include "gfa_reader.h"
 #include "lockfree_hash_map.h"
+#include "mem_allocator.h"
 
 namespace gjfish {
 
     class Coder;
     class GFAReader;
     class LockFreeHashTable;
+    class MemAllocator;
     // strand 0表示负，1表示正
     struct Kmer {
         std::string sequence;
@@ -24,9 +26,11 @@ namespace gjfish {
     public:
         GFAReader *gfa_reader;
         LockFreeHashTable *ht;
+        MemAllocator* ma;
         Coder* coder;
+        KmerCounter(MemAllocator* ma, GFAReader* gfa_reader);
         // 计算kmer
-        void StartCount(GFAReader* reader);
+        void StartCount();
 
         // 1. 初始化哈希表
         void InitialHashTable();
@@ -44,6 +48,7 @@ namespace gjfish {
         // 3. 从superseg中生成kmer并计算
         void CountKmerFromSuperSeg();
         std::vector<Kmer> ProduceKmerFromSuperSeg(SuperSeg ss);
+        ~KmerCounter();
 
     };
 }

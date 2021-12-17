@@ -48,14 +48,14 @@ namespace gjfish{
     }
 }
 
-int main()
-{
-    uint64_t total = 1024000;
-    gjfish::MemAllocator *ma = new gjfish::MemAllocator(total);
-    int* array = (int*)ma->mem_allocate(sizeof(int) * 60);
-    for (int i = 0 ; i < 60; i++){
-        array[i] = i;
-    }
-    delete ma;
-    return 0;
-}
+//int main()
+//{
+//    uint64_t total = 1024000;
+//    gjfish::MemAllocator *ma = new gjfish::MemAllocator(total);
+//    int* array = (int*)ma->mem_allocate(sizeof(int) * 60);
+//    for (int i = 0 ; i < 60; i++){
+//        array[i] = i;
+//    }
+//    delete ma;
+//    return 0;
+//}

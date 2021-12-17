@@ -6,12 +6,16 @@
 #include <iostream>
 
 namespace gjfish{
-    LockFreeHashTable::LockFreeHashTable(uint64_t capacity)  {
+    LockFreeHashTable::LockFreeHashTable(uint64_t capacity, MemAllocator* ma)  {
+        this->ma = ma;
         this->capacity = capacity;
         prime = max_prime_number(capacity);
-        ht = new Node*[prime];
+        nodes = new Node*[prime];
         for (int i = 0; i < prime; i++) {
-            ht[i] = nullptr;
+            nodes[i] = new Node;
+            nodes[i]->next = nullptr;
+            nodes[i]->kmer = nullptr;
+            nodes[i]->cnt = 0;
         }
     }
     uint64_t LockFreeHashTable::get_hashcode(CompressedKmer* compressed_kmer) {
@@ -24,28 +28,25 @@ namespace gjfish{
     void LockFreeHashTable::add_kmer(CompressedKmer* compressed_kmer) {
         uint64_t key = get_hashcode(compressed_kmer);
         mu.lock();
-        Site* new_site = new Site;
-        new_site->val = compressed_kmer->site;
-        Node* tmp_node = ht[key];
-        while (tmp_node != nullptr) {
-            if (is_the_same_kmer(tmp_node->kmer, compressed_kmer->kmer)) {
-                new_site->next = tmp_node->sites->next;
-                tmp_node->sites->next = new_site;
+        Node* node_ptr = nodes[key]->next;
+        while(node_ptr != nullptr){
+            if (is_the_same_kmer(node_ptr->kmer, compressed_kmer->kmer)){
+                node_ptr->cnt++;
                 break;
             }
-            tmp_node = tmp_node->next;
+            node_ptr = node_ptr->next;
         }
-        if (tmp_node == nullptr){
-            Node* new_node = new Node;
-            new_node->kmer = (uint64_t*)malloc(kmer_width * sizeof(uint64_t));
+        if(node_ptr == nullptr) {
+            Node* node = new Node;
             for (int i = 0; i < kmer_width; i++){
-                new_node->kmer[i] = compressed_kmer->kmer[i];
+                node->kmer = (uint64_t*)malloc(sizeof(uint64_t) * kmer_width);
+                node->kmer[i] = compressed_kmer->kmer[i];
             }
-            new_node->sites = new_site;
-            new_site->next = nullptr;
-            new_node->next = nullptr;
-            tmp_node = new_node;
+            node->next = nodes[key]->next;
+            node->cnt = 1;
+            nodes[key]->next = node;
         }
+
         mu.unlock();
     }
     uint64_t LockFreeHashTable::max_prime_number(uint64_t limit){
@@ -77,17 +78,23 @@ namespace gjfish{
 
 }
 
-//int main()
-//{
-//    auto *reader = new gjfish::GFAReader("../test/MT.gfa");
-//    reader->Start();
-//    reader->GenerateSuperSeg();
-//    auto *counter = new gjfish::KmerCounter();
-//    counter->StartCount(reader);
-//    for (int i = 0; i < counter->ht->prime; i++) {
-//        if(counter->ht->ht[i] != nullptr){
-//            std::cout << counter->ht->ht[i]->kmer << std::endl;
-//        }
-//    }
-//    return 0;
-//}
+int main()
+{
+    auto *reader = new gjfish::GFAReader("../test/MT.gfa");
+    auto *ma = new gjfish::MemAllocator(1000);
+
+    reader->Start();
+    reader->GenerateSuperSeg();
+    auto *counter = new gjfish::KmerCounter(ma, reader);
+
+    counter->StartCount();
+    for (int i = 0; i < counter->ht->prime; i++) {
+        gjfish::Node* node_ptr = counter->ht->nodes[i]->next;
+        while(node_ptr != nullptr){
+            std::cout << counter->ht->nodes[i]->next->cnt << " ";
+            node_ptr = node_ptr->next;
+        }
+        std::cout << std::endl;
+    }
+    return 0;
+}

@@ -38,13 +38,13 @@ namespace gjfish{
     class GFAReader{
     public:
         std::string path;
-        uint64_t size;
+        uint64_t size{};
 
         std::vector<SuperSeg> superSegments;
         std::multimap<std::string, std::string> lines;
         std::unordered_map<std::string, Segment> segments;
 
-        GFAReader(std::string path);
+        explicit GFAReader(std::string path);
         void Start();
 
         void ReadSeg(const std::string& primitiveSeg);
@@ -59,7 +59,7 @@ namespace gjfish{
         void DFSLines(SuperSeg& startSseg);
         SuperSegFragment ExtractSsegFragment(std::string segSignIdx);
         bool HasNextSeg(SuperSegFragment ssf);
-        bool IsNewSS(SuperSeg ss);
+        static bool IsNewSS(SuperSeg ss);
         void VisitedSeg(SuperSeg ss);
         ~GFAReader();
     };
@@ -74,8 +74,8 @@ namespace gjfish{
             96, 116, 98, 103,      100, 101, 102, 99,   104, 105, 106, 107,  108, 109, 110, 111,
             112, 113, 114, 115,    97, 97, 118, 119,    120, 121, 122, 123,  124, 125, 126, 127,
     };
-    const uint32_t k = 52;
-    const uint64_t kmer_width = 2;
+    const uint32_t k = 4;
+    const uint64_t kmer_width = 1;
 
     const char STRAND_CHAR[2] = {'-', '+'};
 
