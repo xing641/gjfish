@@ -18,6 +18,10 @@ namespace gjfish{
             nodes[i]->cnt = 0;
         }
     }
+    LockFreeHashTable::~LockFreeHashTable() {
+        delete nodes;
+        delete ma;
+    }
     uint64_t LockFreeHashTable::get_hashcode(CompressedKmer* compressed_kmer) {
         uint64_t tmp = 0;
         for (int i = 0; i < param.kmer_width; i++){
@@ -46,6 +50,7 @@ namespace gjfish{
             node->cnt = 1;
             nodes[key]->next = node;
         }
+        delete compressed_kmer;
 
         mu.unlock();
     }

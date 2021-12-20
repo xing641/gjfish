@@ -24,8 +24,8 @@ namespace gjfish {
     };
     class KmerCounter {
     public:
-        GFAReader *gfa_reader;
-        LockFreeHashTable *ht;
+        GFAReader* gfa_reader;
+        LockFreeHashTable* ht;
         MemAllocator* ma;
         Coder* coder;
         KmerCounter(MemAllocator* ma, GFAReader* gfa_reader);

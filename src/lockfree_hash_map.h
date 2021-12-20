@@ -28,6 +28,7 @@ namespace gjfish{
 
         // 需要保证是线程安全的无锁操作；
         LockFreeHashTable(uint64_t capacity, MemAllocator *ma, gjfish::Param param);
+        ~LockFreeHashTable();
         void add_kmer(CompressedKmer* compressed_kmer);
         uint64_t get_hashcode(CompressedKmer* compressed_kmer);
         uint64_t max_prime_number(uint64_t limit);
