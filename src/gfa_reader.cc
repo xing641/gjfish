@@ -9,7 +9,7 @@
 
 
 namespace gjfish{
-    GFAReader::GFAReader(std::string path) : path(std::move(path)){}
+    GFAReader::GFAReader(std::string path, Param param) : path(std::move(path)), param(std::move(param)){}
     GFAReader::~GFAReader() = default;
 
     void GFAReader::Start() {
@@ -125,7 +125,7 @@ namespace gjfish{
         for (auto it = range.first; it != range.second; it++) {
             SuperSegFragment ssegFrag = ExtractSsegFragment(it->second);
             startSseg.push_back(ssegFrag);
-            if (segments[ssegFrag.segIdx].isVisited[(ssegFrag.strand == "+")? 1 : 0] || ssegFrag.seq.size() >= k) {
+            if (segments[ssegFrag.segIdx].isVisited[(ssegFrag.strand == "+")? 1 : 0] || ssegFrag.seq.size() >= param.k) {
                 if (IsNewSS(startSseg)){
                     superSegments.push_back(startSseg);
                     VisitedSeg(startSseg);
@@ -160,7 +160,7 @@ namespace gjfish{
         for (auto ssf: ss) {
             len += ssf.seq.length();
         }
-        if (len >= k) return true;
+        if (len >= param.k) return true;
         else return false;
     }
 

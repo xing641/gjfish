@@ -6,7 +6,7 @@
 #include <iostream>
 
 namespace gjfish{
-    LockFreeHashTable::LockFreeHashTable(uint64_t capacity, MemAllocator* ma)  {
+    LockFreeHashTable::LockFreeHashTable(uint64_t capacity, MemAllocator* ma, gjfish::Param param)  : param(param){
         this->ma = ma;
         this->capacity = capacity;
         prime = max_prime_number(capacity);
@@ -20,7 +20,7 @@ namespace gjfish{
     }
     uint64_t LockFreeHashTable::get_hashcode(CompressedKmer* compressed_kmer) {
         uint64_t tmp = 0;
-        for (int i = 0; i < kmer_width; i++){
+        for (int i = 0; i < param.kmer_width; i++){
             tmp += compressed_kmer->kmer[i];
         }
         return tmp % prime;
@@ -38,8 +38,8 @@ namespace gjfish{
         }
         if(node_ptr == nullptr) {
             Node* node = new Node;
-            for (int i = 0; i < kmer_width; i++){
-                node->kmer = (uint64_t*)malloc(sizeof(uint64_t) * kmer_width);
+            for (int i = 0; i < param.kmer_width; i++){
+                node->kmer = (uint64_t*)malloc(sizeof(uint64_t) * param.kmer_width);
                 node->kmer[i] = compressed_kmer->kmer[i];
             }
             node->next = nodes[key]->next;
@@ -59,6 +59,14 @@ namespace gjfish{
         return n;
     }
 
+    bool LockFreeHashTable::is_the_same_kmer(const uint64_t* kmer1, const uint64_t* kmer2) {
+        for (int i = 0; i < param.kmer_width; i++) {
+            if(kmer1[i] != kmer2[i])
+                return false;
+        }
+        return true;
+    }
+
     static inline bool is_prime_number(uint64_t n) {
         if (n < 2)
             return false;
@@ -68,33 +76,27 @@ namespace gjfish{
         }
         return true;
     }
-    static inline bool is_the_same_kmer(const uint64_t* kmer1, const uint64_t* kmer2) {
-        for (int i = 0; i < kmer_width; i++) {
-            if(kmer1[i] != kmer2[i])
-                return false;
-        }
-        return true;
-    }
+
 
 }
 
-int main()
-{
-    auto *reader = new gjfish::GFAReader("../test/MT.gfa");
-    auto *ma = new gjfish::MemAllocator(1000);
-
-    reader->Start();
-    reader->GenerateSuperSeg();
-    auto *counter = new gjfish::KmerCounter(ma, reader);
-
-    counter->StartCount();
-    for (int i = 0; i < counter->ht->prime; i++) {
-        gjfish::Node* node_ptr = counter->ht->nodes[i]->next;
-        while(node_ptr != nullptr){
-            std::cout << counter->ht->nodes[i]->next->cnt << " ";
-            node_ptr = node_ptr->next;
-        }
-        std::cout << std::endl;
-    }
-    return 0;
-}
+//int main()
+//{
+//    auto *reader = new gjfish::GFAReader("../test/MT.gfa");
+//    auto *ma = new gjfish::MemAllocator(1000);
+//
+//    reader->Start();
+//    reader->GenerateSuperSeg();
+//    auto *counter = new gjfish::KmerCounter(ma, reader);
+//
+//    counter->StartCount();
+//    for (int i = 0; i < counter->ht->prime; i++) {
+//        gjfish::Node* node_ptr = counter->ht->nodes[i]->next;
+//        while(node_ptr != nullptr){
+//            std::cout << counter->ht->nodes[i]->next->cnt << " ";
+//            node_ptr = node_ptr->next;
+//        }
+//        std::cout << std::endl;
+//    }
+//    return 0;
+//}

@@ -17,6 +17,7 @@ namespace gjfish{
                 return mem_ptr;
             }
         }
+        std::cout << "no memory to allocate.\n";
         exit(EXIT_FAILURE);
     }
 
@@ -30,6 +31,7 @@ namespace gjfish{
                 return mem_ptr;
             }
         }
+        std::cout << "no memory to allocate.\n";
         exit(EXIT_FAILURE);
     }
 

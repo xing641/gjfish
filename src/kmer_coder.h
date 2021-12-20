@@ -19,11 +19,17 @@ namespace gjfish {
     // 将kmer -> compressedkmer
     class Coder{
     public:
+        gjfish::Param param;
+
+        Coder(gjfish::Param param);
+
         CompressedKmer *Encode(Kmer &kmer);
         void EncodeSite(Kmer &kmer, CompressedKmer* compressed_kmer);
         void EncodeKmer(Kmer &kmer, CompressedKmer* compressed_kmer);
         Kmer Decode(CompressedKmer& compressed_kmer);
         std::string DecodeKmer(uint64_t* compressed_seq);
+
+
     };
     // A: C: G: T = 0: 1: 2: 3;
     const uint64_t ENCODE_MER_TABLE[128] = {
