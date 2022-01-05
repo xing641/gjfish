@@ -10,16 +10,19 @@ namespace gjfish{
         this->ma = ma;
         this->capacity = capacity;
         prime = max_prime_number(capacity);
-        nodes = new Node*[prime];
+        nodes = (Node**)ma->mem_allocate(sizeof(Node*) * prime);
         for (int i = 0; i < prime; i++) {
-            nodes[i] = new Node;
+            nodes[i] = (Node*)ma->mem_allocate(sizeof(Node));
             nodes[i]->next = nullptr;
             nodes[i]->kmer = nullptr;
             nodes[i]->cnt = 0;
         }
     }
     LockFreeHashTable::~LockFreeHashTable() {
-        delete nodes;
+        for (int i = 0; i < prime; i++) {
+            ma->mem_free(nodes[i]);
+        }
+        ma->mem_free(nodes);
         delete ma;
     }
     uint64_t LockFreeHashTable::get_hashcode(CompressedKmer* compressed_kmer) {
@@ -41,7 +44,7 @@ namespace gjfish{
             node_ptr = node_ptr->next;
         }
         if(node_ptr == nullptr) {
-            Node* node = new Node;
+            Node* node = (Node*)ma->mem_allocate(sizeof(Node));
             for (int i = 0; i < param.kmer_width; i++){
                 node->kmer = (uint64_t*)malloc(sizeof(uint64_t) * param.kmer_width);
                 node->kmer[i] = compressed_kmer->kmer[i];
@@ -64,6 +67,7 @@ namespace gjfish{
         return n;
     }
 
+
     bool LockFreeHashTable::is_the_same_kmer(const uint64_t* kmer1, const uint64_t* kmer2) {
         for (int i = 0; i < param.kmer_width; i++) {
             if(kmer1[i] != kmer2[i])
@@ -81,7 +85,6 @@ namespace gjfish{
         }
         return true;
     }
-
 
 }
 
