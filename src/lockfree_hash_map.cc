@@ -67,7 +67,6 @@ namespace gjfish{
         return n;
     }
 
-
     bool LockFreeHashTable::is_the_same_kmer(const uint64_t* kmer1, const uint64_t* kmer2) {
         for (int i = 0; i < param.kmer_width; i++) {
             if(kmer1[i] != kmer2[i])
