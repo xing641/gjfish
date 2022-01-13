@@ -4,59 +4,195 @@
 
 #include "lockfree_hash_map.h"
 #include <iostream>
+#include <cstring>
 
 namespace gjfish{
-    LockFreeHashTable::LockFreeHashTable(uint64_t capacity, MemAllocator* ma, gjfish::Param param)  : param(param){
+    LockFreeHashTable::LockFreeHashTable(MemAllocator* ma, gjfish::Param param)  : param(param){
         this->ma = ma;
-        this->capacity = capacity;
-        prime = max_prime_number(capacity);
-        nodes = (Node**)ma->mem_allocate(sizeof(Node*) * prime);
-        for (int i = 0; i < prime; i++) {
-            nodes[i] = (Node*)ma->mem_allocate(sizeof(Node));
-            nodes[i]->next = nullptr;
-            nodes[i]->kmer = nullptr;
-            nodes[i]->cnt = 0;
+
+        // allocate blocks
+        blocks_count = param.threads_count;
+        blocks = (Block**)ma->mem_allocate(sizeof(Block*) * blocks_count);
+        for (int i = 0; i < blocks_count; i++){
+            blocks[i] = (Block*)ma->mem_allocate(sizeof(Block));
+        }
+
+        // count nodes num
+        kmer_size = sizeof(uint64_t) * param.kmer_width;
+        node_size = kmer_size + sizeof(Node);
+
+        uint64_t nodes_count = ma->available / (node_size * 3 + sizeof(uint64_t) * 4) * 3;
+        uint64_t nodes_mem = node_size * nodes_count;
+
+        // allocate table
+        uint64_t table_mem_max = ma->available - nodes_mem;
+        uint64_t table_capacity_max = table_mem_max / sizeof(uint64_t);
+        table_capacity = max_prime_number(table_capacity_max);
+        uint64_t table_mem = table_capacity * sizeof(uint64_t);
+        table = (uint64_t*)ma->mem_allocate(table_mem);
+        for (uint64_t i = 0; i < table_capacity; i++) {
+            table[i] = 0;
+        }
+
+        // allocate nodes
+        nodes = (Node*)ma->mem_allocate(nodes_mem);
+        uint64_t block_node_size = nodes_count / blocks_count;
+        for (int i = 0; i < blocks_count; i++) {
+            blocks[i]->start_id = 1 + block_node_size * (uint64_t)i;
+            blocks[i]->end_id = (i == blocks_count - 1) ? (nodes_count) : (1 + block_node_size * (uint64_t)(i + 1));
+            blocks[i]->next_id = blocks[i]->start_id;
+            blocks[i]->current_id = 0;
+            blocks[i]->synced = false;
         }
     }
+
     LockFreeHashTable::~LockFreeHashTable() {
-        for (int i = 0; i < prime; i++) {
-            ma->mem_free(nodes[i]);
-        }
         ma->mem_free(nodes);
-        delete ma;
+        ma->mem_free(table);
+        for (int i = 0; i < blocks_count; i++){
+            ma->mem_free(blocks[i]);
+        }
+        ma->mem_free(blocks);
     }
-    uint64_t LockFreeHashTable::get_hashcode(CompressedKmer* compressed_kmer) {
+
+    uint64_t LockFreeHashTable::get_hashcode(uint64_t * kmer) {
         uint64_t tmp = 0;
         for (int i = 0; i < param.kmer_width; i++){
-            tmp += compressed_kmer->kmer[i];
+            tmp += kmer[i];
         }
-        return tmp % prime;
+        return tmp % table_capacity;
     }
-    void LockFreeHashTable::add_kmer(CompressedKmer* compressed_kmer) {
-        uint64_t key = get_hashcode(compressed_kmer);
-        mu.lock();
-        Node* node_ptr = nodes[key]->next;
-        while(node_ptr != nullptr){
-            if (is_the_same_kmer(node_ptr->kmer, compressed_kmer->kmer)){
-                node_ptr->cnt++;
+
+    void LockFreeHashTable::copy_kmer(uint64_t *kmer1, uint64_t *kmer2){
+        memcpy(kmer1, kmer2, kmer_size);
+    }
+
+    Node* LockFreeHashTable::get_node(uint64_t node_id) {
+        char* node = (char*)nodes;
+        node += node_size * node_id;
+        return (Node*)node;
+    }
+
+    uint64_t LockFreeHashTable::request_node(size_t n) {
+        Block* block = blocks[n];
+        uint64_t node_id;
+
+        do {
+            node_id = block->next_id;
+            if (node_id == block->end_id) {
+                return 0;
+            }
+        } while (!__sync_bool_compare_and_swap(&(block->next_id), node_id, node_id + 1));
+
+        Node* node = get_node(node_id);
+        node->cnt = 0;
+
+        return node_id;
+    }
+
+    uint64_t LockFreeHashTable::polling_request_node(size_t n) {
+        uint64_t node_id = request_node(n);
+        if (node_id != 0) {
+            return node_id;
+        }
+
+        size_t m = blocks_count;
+        for (size_t i = 0; i < m - 1; i++) {
+            n++;
+            if (n == m)
+                n = 0;
+
+            node_id = request_node(n);
+            if (node_id != 0) {
+                return node_id;
+            }
+        }
+        return 0;
+    }
+
+    uint64_t LockFreeHashTable::collision_list_add_kmer(uint64_t **list, uint64_t* kmer) {
+        uint64_t node_id;
+        uint64_t* p = *list;
+        while (true) {
+            node_id = *p;
+
+            if (node_id == 0) {
                 break;
             }
-            node_ptr = node_ptr->next;
-        }
-        if(node_ptr == nullptr) {
-            Node* node = (Node*)ma->mem_allocate(sizeof(Node));
-            for (int i = 0; i < param.kmer_width; i++){
-                node->kmer = (uint64_t*)malloc(sizeof(uint64_t) * param.kmer_width);
-                node->kmer[i] = compressed_kmer->kmer[i];
-            }
-            node->next = nodes[key]->next;
-            node->cnt = 1;
-            nodes[key]->next = node;
-        }
-        delete compressed_kmer;
 
-        mu.unlock();
+            Node* node = get_node(node_id);
+            if (is_the_same_kmer(node->kmer, kmer)) {
+                uint32_t count;
+                do {
+                    count = node->cnt;
+                    if (count == UINT32_MAX)
+                        break;
+                } while (!__sync_bool_compare_and_swap(&(node->cnt), count, count + 1));
+
+                break;
+            }
+            p = &(node->next);
+        }
+
+        *list = p;
+        return node_id;
     }
+
+    bool LockFreeHashTable::add_kmer(size_t n, CompressedKmer* compressed_kmer) {
+        Block* block = blocks[n];
+
+        if (!(block->synced) && (block->current_id == 0)) {
+            block->current_id = polling_request_node(n);
+            if (block->current_id == 0) {
+                keys_locked = true;
+            }
+        }
+
+        // For multi-threaded situation, when the keys are locked by one of the working threads, the other threads may
+        // not yet knew the change, so they need to sync once. As the failure of adding K-mer may occur a long time later
+        // (if one thread adds many existed K-mers continuously), checking if the keys of the hash map are locked is a
+        // good signal.
+
+        if (!(block->synced) && keys_locked) {
+            pthread_barrier_wait(&(barrier));
+            block->synced = true;
+        }
+
+        size_t table_idx = get_hashcode(compressed_kmer->kmer);
+
+        uint64_t * collision_list = &(table[table_idx]);
+        uint64_t node_id = collision_list_add_kmer(&collision_list, compressed_kmer->kmer);
+
+        if (node_id != 0) {
+            return true;
+        }
+
+        // If some thread has set keys_locked, assume this thread noticed the change here and return false, while the other
+        // thread has not seen the change and is adding a new node to hash table, then it may cause inconsistency.
+        // Checking if this thread has been synced is important.
+        if (block->synced && keys_locked) {
+            return false;
+        }
+
+        Node *node = get_node(block->current_id);
+        copy_kmer(node->kmer, compressed_kmer->kmer);
+        node->cnt = 1;
+        node->next = 0;
+
+        do {
+            node_id = collision_list_add_kmer(&collision_list, compressed_kmer->kmer);
+            if (node_id != 0) {
+                // Mark the node invalid.
+                node->cnt = 0;
+                return true;
+            }
+        } while (!__sync_bool_compare_and_swap(collision_list, node_id, block->current_id));
+
+        block->current_id = 0;
+
+        return true;
+    }
+
     uint64_t LockFreeHashTable::max_prime_number(uint64_t limit){
         uint64_t n = limit;
         while (!is_prime_number(n) && (n > 0))
@@ -89,7 +225,8 @@ namespace gjfish{
 
 //int main()
 //{
-//    auto *reader = new gjfish::GFAReader("../test/MT.gfa");
+//    gjfish::Param param;
+//    auto *reader = new gjfish::GFAReader("../test/MT.gfa", param);
 //    auto *ma = new gjfish::MemAllocator(1000);
 //
 //    reader->Start();
@@ -97,13 +234,5 @@ namespace gjfish{
 //    auto *counter = new gjfish::KmerCounter(ma, reader);
 //
 //    counter->StartCount();
-//    for (int i = 0; i < counter->ht->prime; i++) {
-//        gjfish::Node* node_ptr = counter->ht->nodes[i]->next;
-//        while(node_ptr != nullptr){
-//            std::cout << counter->ht->nodes[i]->next->cnt << " ";
-//            node_ptr = node_ptr->next;
-//        }
-//        std::cout << std::endl;
-//    }
 //    return 0;
 //}

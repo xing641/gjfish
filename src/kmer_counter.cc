@@ -11,16 +11,21 @@ namespace gjfish {
             kmer[i] = 0;
         }
     }
+
     CompressedKmer::~CompressedKmer(){
         delete kmer;
     }
-    KmerCounter::KmerCounter(MemAllocator* ma, GFAReader* gfa_reader) : ma(ma), gfa_reader(gfa_reader){}
+    KmerCounter::KmerCounter(MemAllocator* ma, GFAReader* gfa_reader) : ma(ma), gfa_reader(gfa_reader){
+        buffer_queue = new ConcurrentQueue<CompressedKmer*>();
+        coder = new Coder(gfa_reader->param);
+        file.open("./tmp.txt", std::ios::out|std::ios::binary);
+    }
 
     void KmerCounter::StartCount(){
 
         //TODO 初始化哈希表 InitialHashTable();
         //TODO 这里需要并发
-        ht = new gjfish::LockFreeHashTable(300, ma, gfa_reader->param);
+        ht = new gjfish::LockFreeHashTable(ma, gfa_reader->param);
 
         CountKmerFromSuperSeg();
         CountKmerFromSeg();
@@ -35,7 +40,9 @@ namespace gjfish {
                     kmer.sequence = it.second.seq.substr(i, gfa_reader->param.k);
                     kmer.seg_idx = it.second.segIdx;
                     kmer.seg_start_site = i;
-                    ht->add_kmer(coder->Encode(kmer));
+                    // ht->add_kmer(coder->Encode(kmer));
+                    buffer_queue->Push(coder->Encode(kmer));
+                    file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
                 }
             }
         }
@@ -45,7 +52,9 @@ namespace gjfish {
         for (auto it: gfa_reader->superSegments){
             std::vector<Kmer> kmers = ProduceKmerFromSuperSeg(it);
             for (auto kmer: kmers) {
-                ht->add_kmer(coder->Encode(kmer));
+                // ht->add_kmer(coder->Encode(kmer));
+                buffer_queue->Push(coder->Encode(kmer));
+                file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
             }
         }
     }
@@ -76,10 +85,10 @@ namespace gjfish {
         }
         return kmers;
     }
+
     KmerCounter::~KmerCounter(){
         delete gfa_reader;
         delete ht;
         delete coder;
     }
-
 }

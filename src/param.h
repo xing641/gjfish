@@ -10,9 +10,10 @@
 namespace gjfish {
     class Param {
     public:
-        uint32_t k;
-        uint32_t kmer_width;
+        uint32_t k = 16;
+        uint32_t kmer_width = 1;
         std::string file_dir;
+        uint32_t threads_count = 1;
         // ...
     };
 }

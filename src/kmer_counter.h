@@ -8,6 +8,8 @@
 #include "gfa_reader.h"
 #include "lockfree_hash_map.h"
 #include "mem_allocator.h"
+#include "buffer_queue.h"
+#include <fstream>
 
 namespace gjfish {
 
@@ -15,6 +17,7 @@ namespace gjfish {
     class GFAReader;
     class LockFreeHashTable;
     class MemAllocator;
+    class CompressedKmer;
     // strand 0表示负，1表示正
     struct Kmer {
         std::string sequence;
@@ -28,6 +31,10 @@ namespace gjfish {
         LockFreeHashTable* ht;
         MemAllocator* ma;
         Coder* coder;
+        ConcurrentQueue<CompressedKmer*>* buffer_queue;
+
+        std::ofstream file;
+
         KmerCounter(MemAllocator* ma, GFAReader* gfa_reader);
         // 计算kmer
         void StartCount();

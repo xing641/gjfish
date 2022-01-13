@@ -10,13 +10,15 @@
 
 int main()
 {
-    uint64_t total = 1;
-    gjfish::MemAllocator *ma = new gjfish::MemAllocator(total);
-    int* array = (int*)ma->mem_allocate(sizeof(int) * 60);
-    std::cout << "???" << std::endl;
-    for (int i = 0 ; i < 60; i++){
-        array[i] = i;
-    }
-    delete ma;
+    gjfish::Param param;
+    auto *reader = new gjfish::GFAReader("../test/MT.gfa", param);
+    auto *ma = new gjfish::MemAllocator(100000);
+
+    reader->Start();
+    reader->GenerateSuperSeg();
+
+    auto *counter = new gjfish::KmerCounter(ma, reader);
+
+    counter->StartCount();
     return 0;
 }
