@@ -12,8 +12,9 @@ namespace gjfish {
     public:
         uint32_t k = 16;
         uint32_t kmer_width = 1;
-        std::string file_dir;
+        std::string result_site_dir;
         uint32_t threads_count = 1;
+        uint32_t mem_size = 100000;
         // ...
     };
 }

@@ -15,9 +15,9 @@ namespace gjfish{
     class CompressedKmer;
     class MemAllocator;
     struct Node{
-        uint64_t* kmer;
         uint64_t next;
         uint64_t cnt;
+        uint64_t kmer[];
     };
     struct Block{
         uint64_t start_id;
@@ -39,7 +39,7 @@ namespace gjfish{
         Block **blocks;
 
         Node* nodes;
-        uint64_t kmer_size;
+        uint32_t kmer_size;
         uint64_t node_size;
 
         MemAllocator* ma;
@@ -63,7 +63,7 @@ namespace gjfish{
         uint64_t table_capacity = 0;
         std::mutex mu;
 
-        bool keys_locked;
+        bool keys_locked = false;
         pthread_barrier_t barrier;
     };
     static bool is_prime_number(uint64_t n);

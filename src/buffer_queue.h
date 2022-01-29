@@ -42,7 +42,7 @@ namespace gjfish {
                     return false;
                 }
             }
-
+            std::lock_guard<std::mutex> lock(_mutex);
             record = std::move(_queue.front());
             _queue.pop();
             return true;
@@ -58,7 +58,7 @@ namespace gjfish {
             return _queue.empty();
         }
 
-    private:
+    public:
         std::queue<Type> _queue;
         mutable std::mutex _mutex;
         std::condition_variable _condition;

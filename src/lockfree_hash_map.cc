@@ -44,6 +44,8 @@ namespace gjfish{
             blocks[i]->current_id = 0;
             blocks[i]->synced = false;
         }
+
+        pthread_barrier_init(&(barrier), NULL, (unsigned int)param.threads_count);
     }
 
     LockFreeHashTable::~LockFreeHashTable() {

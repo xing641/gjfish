@@ -19,7 +19,7 @@ namespace gjfish {
         site <<= 31;
         site |= kmer.seg_start_site;
         site <<=32;
-        site |= (uint32_t)std::stol(kmer.seg_idx); //TODO seg_idx 需要转化成数字
+        site |= SegIdxToInt(kmer.seg_idx); //TODO seg_idx 需要转化成数字
         compressed_kmer->site = site;
     }
 
@@ -51,6 +51,16 @@ namespace gjfish {
         }
         std::reverse(str_kmer.begin(), str_kmer.end());
         return str_kmer;
+    }
+
+    uint32_t Coder::SegIdxToInt(const std::string &seg_idx) {
+        uint32_t res = 0;
+        int m = seg_idx.size();
+        for (int i = 1; i < m; i++) {
+            res *= 10;
+            res += seg_idx[i] - '0';
+        }
+        return res;
     }
 }
 

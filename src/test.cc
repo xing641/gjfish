@@ -11,7 +11,7 @@
 int main()
 {
     gjfish::Param param;
-    auto *reader = new gjfish::GFAReader("../test/MT.gfa", param);
+    auto *reader = new gjfish::GFAReader("../test/GRCh38-20-0.10b.gfa", param);
     auto *ma = new gjfish::MemAllocator(100000);
 
     reader->Start();

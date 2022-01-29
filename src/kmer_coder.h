@@ -28,7 +28,7 @@ namespace gjfish {
         void EncodeKmer(Kmer &kmer, CompressedKmer* compressed_kmer);
         Kmer Decode(CompressedKmer& compressed_kmer);
         std::string DecodeKmer(uint64_t* compressed_seq);
-
+        uint32_t SegIdxToInt(const std::string &seg_idx);
 
     };
     // A: C: G: T = 0: 1: 2: 3;
