@@ -33,9 +33,9 @@ namespace gjfish {
         Coder* coder;
         ConcurrentQueue<CompressedKmer*>* buffer_queue;
 
-        std::ofstream file;
+        std::ofstream kmer_site_out_file;
 
-        KmerCounter(MemAllocator* ma, GFAReader* gfa_reader);
+        KmerCounter(GFAReader* gfa_reader);
         // 计算kmer
         void StartCount();
 

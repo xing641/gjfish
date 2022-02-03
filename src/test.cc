@@ -10,15 +10,24 @@
 
 int main()
 {
-    gjfish::Param param;
+    gjfish::Param param; // 从外部输入
+    param.kmer_width = 1;
+    param.k = 31;
+    param.threads_count = 8;
+    param.mem_size = 8000000000;
+    param.result_site_dir = "result";
+
     auto *reader = new gjfish::GFAReader("../test/GRCh38-20-0.10b.gfa", param);
-    auto *ma = new gjfish::MemAllocator(100000);
 
     reader->Start();
     reader->GenerateSuperSeg();
 
-    auto *counter = new gjfish::KmerCounter(ma, reader);
+    auto *counter = new gjfish::KmerCounter(reader);
 
+    // 数据输入：两个buffer_queue 一个是segment， 一个是supersegment
+    // 初始化：线程、coder、hash_table
+    // 输出：hash_table
     counter->StartCount();
+
     return 0;
 }

@@ -4,6 +4,7 @@
 #include "kmer_counter.h"
 
 namespace gjfish {
+    // compressedkmer
     CompressedKmer::CompressedKmer(uint64_t width) {
         //TODO 需要一个malloc来进行分配内存
         kmer = (uint64_t* )malloc(sizeof(uint64_t) * width);
@@ -15,10 +16,13 @@ namespace gjfish {
     CompressedKmer::~CompressedKmer(){
         delete kmer;
     }
-    KmerCounter::KmerCounter(MemAllocator* ma, GFAReader* gfa_reader) : ma(ma), gfa_reader(gfa_reader){
+
+    // kmercounter
+    KmerCounter::KmerCounter(GFAReader* gfa_reader) : gfa_reader(gfa_reader){
         buffer_queue = new ConcurrentQueue<CompressedKmer*>();
         coder = new Coder(gfa_reader->param);
-        file.open("./tmp.txt", std::ios::out|std::ios::binary);
+        ma = gfa_reader->ma;
+        kmer_site_out_file.open("./"+gfa_reader->param.kmer_site_out_file_name, std::ios::out|std::ios::binary);
     }
 
     void KmerCounter::StartCount(){

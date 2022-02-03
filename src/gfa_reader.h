@@ -11,9 +11,11 @@
 #include <map>
 #include <unordered_map>
 #include "param.h"
+#include "mem_allocator.h"
 
 namespace gjfish{
 
+    class MemAllocator;
     struct Segment{
         std::string segIdx;
         std::string seq;
@@ -42,6 +44,7 @@ namespace gjfish{
         gjfish::Param param;
         std::string path;
         uint64_t size;
+        gjfish::MemAllocator* ma;
 
         std::vector<SuperSeg> superSegments;
         std::multimap<std::string, std::string> lines;

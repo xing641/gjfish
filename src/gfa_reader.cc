@@ -9,7 +9,9 @@
 
 
 namespace gjfish{
-    GFAReader::GFAReader(std::string path, Param param) : path(std::move(path)), param(std::move(param)){}
+    GFAReader::GFAReader(std::string path, Param param) : path(std::move(path)), param(std::move(param)){
+        ma = new gjfish::MemAllocator(param.mem_size);
+    }
     GFAReader::~GFAReader() = default;
 
     void GFAReader::Start() {
