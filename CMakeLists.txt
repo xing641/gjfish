@@ -22,8 +22,22 @@ include_directories(src)
 #        src/param.hpp
 #        test.cpp
 #        test.hpp)
+
 add_executable(src_stable
         src/gfa_reader.h
         src/gfa_reader.cc
+        src/kmer_coder.h
+        src/kmer_coder.cc
         src/kmer_counter.h
-        src/kmer_counter.cc)
+        src/kmer_counter.cc
+        src/mem_allocator.cc
+        src/mem_allocator.h
+        src/lockfree_hash_map.cc
+        src/lockfree_hash_map.h
+        src/test.cc
+        src/param.cc
+        src/param.h)
+
+set(THREADS_PREFER_PTHREAD_FLAG ON)
+find_package(Threads REQUIRED)
+target_link_libraries(src_stable PUBLIC Threads::Threads)

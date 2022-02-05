@@ -25,14 +25,17 @@ namespace gjfish {
         kmer_site_out_file.open("./"+gfa_reader->param.kmer_site_out_file_name, std::ios::out|std::ios::binary);
     }
 
-    void KmerCounter::StartCount(){
+    void KmerCounter::StartCount(bool is_save_site){
+        if (is_save_site){
+            //TODO 初始化哈希表 InitialHashTable();
+            //TODO 这里需要并发
+            ht = new gjfish::LockFreeHashTable(ma, gfa_reader->param);
 
-        //TODO 初始化哈希表 InitialHashTable();
-        //TODO 这里需要并发
-        ht = new gjfish::LockFreeHashTable(ma, gfa_reader->param);
-
-        CountKmerFromSuperSeg();
-        CountKmerFromSeg();
+            CountKmerFromSuperSeg();
+            CountKmerFromSeg();
+        } else{
+            // TODO
+        }
     }
 
     // TODO kmer需要考虑方向
@@ -51,6 +54,7 @@ namespace gjfish {
             }
         }
     }
+
 
     void KmerCounter::CountKmerFromSuperSeg() {
         for (auto it: gfa_reader->superSegments){
@@ -94,5 +98,9 @@ namespace gjfish {
         delete gfa_reader;
         delete ht;
         delete coder;
+    }
+
+    void KmerCountWork(KmerCounter *kc){
+
     }
 }

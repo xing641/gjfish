@@ -15,9 +15,9 @@ int main()
     param.k = 31;
     param.threads_count = 8;
     param.mem_size = 8000000000;
-    param.result_site_dir = "result";
+    param.result_site_dir = "kmer_site_out_file_name.bin";
 
-    auto *reader = new gjfish::GFAReader("../test/GRCh38-20-0.10b.gfa", param);
+    auto *reader = new gjfish::GFAReader("../data/GRCh38-20-0.10b.gfa", param);
 
     reader->Start();
     reader->GenerateSuperSeg();
@@ -27,7 +27,13 @@ int main()
     // 数据输入：两个buffer_queue 一个是segment， 一个是supersegment
     // 初始化：线程、coder、hash_table
     // 输出：hash_table
-    counter->StartCount();
+
+    for (int i = 0; i < param.threads_count; i++) {
+        th[i] =
+    }
+
+    counter->ExportHashTable();
+    counter->ImportHashTable("/");
 
     return 0;
 }
