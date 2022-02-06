@@ -6,6 +6,7 @@
 #include "kmer_coder.h"
 #include "lockfree_hash_map.h"
 #include "mem_allocator.h"
+#include <thread>
 
 
 int main()
@@ -22,18 +23,22 @@ int main()
     reader->Start();
     reader->GenerateSuperSeg();
 
-    auto *counter = new gjfish::KmerCounter(reader);
+    auto counter = new gjfish::KmerCounter(reader);
 
     // 数据输入：两个buffer_queue 一个是segment， 一个是supersegment
     // 初始化：线程、coder、hash_table
     // 输出：hash_table
-
+    std::thread th[param.threads_count];
     for (int i = 0; i < param.threads_count; i++) {
-        th[i] =
+        th[i] = std::thread(gjfish::KmerCountWork, std::ref(counter), i);
     }
 
-    counter->ExportHashTable();
-    counter->ImportHashTable("/");
+    for (int i = 0; i < param.threads_count; i++) {
+        th[i].join();
+    }
+
+    // counter->ExportHashTable();
+    // counter->ImportHashTable("/");
 
     return 0;
 }

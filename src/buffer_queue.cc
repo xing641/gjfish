@@ -7,7 +7,7 @@
 
 pthread_barrier_t barrier;
 
-void add_queue(gjfish::ConcurrentQueue<int> &q){
+void add_queue(gjfish::BufferQueue<int> &q){
     int loop = 1000000;
     pthread_barrier_wait(&barrier);
     while (loop--){
@@ -15,7 +15,7 @@ void add_queue(gjfish::ConcurrentQueue<int> &q){
     }
 }
 
-void pop_queue(gjfish::ConcurrentQueue<int> &q){
+void pop_queue(gjfish::BufferQueue<int> &q){
     int k;
     int cnt = 0;
     pthread_barrier_wait(&barrier);

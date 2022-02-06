@@ -31,13 +31,16 @@ namespace gjfish {
         LockFreeHashTable* ht;
         MemAllocator* ma;
         Coder* coder;
-        ConcurrentQueue<CompressedKmer*>* buffer_queue;
 
-        std::ofstream kmer_site_out_file;
+        BufferQueue<Segment> *seg_buffer_queue;
+        BufferQueue<SuperSeg> *super_seg_buffer_queue;
+        void init_seg_buffer_queue();
+        void init_super_seg_buffer_queue();
+
 
         KmerCounter(GFAReader* gfa_reader);
         // 计算kmer
-        void StartCount(bool is_save_site);
+        void StartCount(bool is_save_site, std::std::ofstream &kmer_site_out_file, int n);
 
         // 1. 初始化哈希表
         void InitialHashTable();
@@ -51,11 +54,12 @@ namespace gjfish {
          *
          * */
         // 2. 从segment中生成kmer并计算
-        void CountKmerFromSeg();
+        void CountKmerFromSeg(int n, std::ofstream &kmer_site_out_file);
         // 3. 从superseg中生成kmer并计算
-        void CountKmerFromSuperSeg();
+        void CountKmerFromSuperSeg(int n, std::ofstream &kmer_site_out_file);
         std::vector<Kmer> ProduceKmerFromSuperSeg(SuperSeg ss);
 
+        // TODO
         void ExportHashTable();
         void ImportHashTable(std::string file_path);
 
@@ -63,6 +67,6 @@ namespace gjfish {
 
     };
 
-    void kmerCountWork(KmerCounter *kc);
+    void KmerCountWork(KmerCounter *kc, int n);
 }
 #endif //SRC_STABLE_KMER_COUNTER_H

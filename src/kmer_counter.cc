@@ -17,52 +17,66 @@ namespace gjfish {
         delete kmer;
     }
 
-    // kmercounter
-    KmerCounter::KmerCounter(GFAReader* gfa_reader) : gfa_reader(gfa_reader){
-        buffer_queue = new ConcurrentQueue<CompressedKmer*>();
-        coder = new Coder(gfa_reader->param);
-        ma = gfa_reader->ma;
-        kmer_site_out_file.open("./"+gfa_reader->param.kmer_site_out_file_name, std::ios::out|std::ios::binary);
+    void KmerCounter::init_seg_buffer_queue() {
+        seg_buffer_queue = new BufferQueue<Segment>;
+        for (auto it: gfa_reader->segments){
+            seg_buffer_queue->Push(it.second);
+        }
     }
 
-    void KmerCounter::StartCount(bool is_save_site){
+    void KmerCounter::init_super_seg_buffer_queue() {
+        super_seg_buffer_queue = new BufferQueue<SuperSeg>;
+        for (auto it: gfa_reader->superSegments) {
+            super_seg_buffer_queue->Push(it);
+        }
+    }
+
+    // kmercounter
+    KmerCounter::KmerCounter(GFAReader* gfa_reader) : gfa_reader(gfa_reader){
+        init_seg_buffer_queue();
+        init_super_seg_buffer_queue();
+        coder = new Coder(gfa_reader->param);
+        ma = gfa_reader->ma;
+        ht = new gjfish::LockFreeHashTable(ma, gfa_reader->param);
+    }
+
+    void KmerCounter::StartCount(bool is_save_site, std::ofstream &kmer_site_out_file, int n){
         if (is_save_site){
             //TODO 初始化哈希表 InitialHashTable();
             //TODO 这里需要并发
-            ht = new gjfish::LockFreeHashTable(ma, gfa_reader->param);
 
-            CountKmerFromSuperSeg();
-            CountKmerFromSeg();
-        } else{
+            CountKmerFromSeg(n, kmer_site_out_file);
+            CountKmerFromSuperSeg(n, kmer_site_out_file);
+        } else {
             // TODO
         }
     }
 
     // TODO kmer需要考虑方向
-    void KmerCounter::CountKmerFromSeg() {
-        for (auto it: gfa_reader->segments){
-            if (it.second.seq.size() >= gfa_reader->param.k) {
-                for (int i = it.second.seq.size() - gfa_reader->param.k; i >= 0; i--){
+    void KmerCounter::CountKmerFromSeg(int n, std::ofstream &kmer_site_out_file) {
+        Segment seg;
+        while(seg_buffer_queue->Pop(seg, false)) {
+            if (seg.seq.size() >= gfa_reader->param.k) {
+                for (int i = seg.seq.size() - gfa_reader->param.k; i >= 0; i--) {
                     Kmer kmer;
-                    kmer.sequence = it.second.seq.substr(i, gfa_reader->param.k);
-                    kmer.seg_idx = it.second.segIdx;
+                    kmer.sequence = seg.seq.substr(i, gfa_reader->param.k);
+                    kmer.seg_idx = seg.segIdx;
                     kmer.seg_start_site = i;
-                    ht->add_kmer(0, coder->Encode(kmer));
-                    // buffer_queue->Push(coder->Encode(kmer));
-                    // file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
+                    ht->add_kmer(n, coder->Encode(kmer));
+                    kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
                 }
             }
         }
     }
 
 
-    void KmerCounter::CountKmerFromSuperSeg() {
-        for (auto it: gfa_reader->superSegments){
-            std::vector<Kmer> kmers = ProduceKmerFromSuperSeg(it);
+    void KmerCounter::CountKmerFromSuperSeg(int n, std::ofstream &kmer_site_out_file) {
+        SuperSeg ss;
+        while(super_seg_buffer_queue->Pop(ss, false)) {
+            std::vector<Kmer> kmers = ProduceKmerFromSuperSeg(ss);
             for (auto kmer: kmers) {
-                ht->add_kmer(0, coder->Encode(kmer));
-                // buffer_queue->Push(coder->Encode(kmer));
-                // file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
+                ht->add_kmer(n, coder->Encode(kmer));
+                kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
             }
         }
     }
@@ -100,7 +114,9 @@ namespace gjfish {
         delete coder;
     }
 
-    void KmerCountWork(KmerCounter *kc){
-
+    void KmerCountWork(KmerCounter *kc, int n){
+        std::ofstream kmer_site_out_file;
+        kmer_site_out_file.open("./" + kc->gfa_reader->param.kmer_site_out_file_name + "_" + std::to_string(n), std::ios::out|std::ios::binary);
+        kc->StartCount(true, kmer_site_out_file, n);
     }
 }

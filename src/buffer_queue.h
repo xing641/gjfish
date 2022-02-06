@@ -13,15 +13,16 @@
 namespace gjfish {
     template<class Type>
 /*消息队列实现*/
-    class ConcurrentQueue {
-        ConcurrentQueue &operator=(const ConcurrentQueue &) = delete;
 
-        ConcurrentQueue(const ConcurrentQueue &other) = delete;
+    class BufferQueue {
+        BufferQueue &operator=(const BufferQueue &) = delete;
+
+        BufferQueue(const BufferQueue &other) = delete;
 
     public:
-        ConcurrentQueue() : _queue(), _mutex(), _condition() {}
+        BufferQueue() : _queue(), _mutex(), _condition() {}
 
-        virtual ~ConcurrentQueue() {}
+        virtual ~BufferQueue() {}
 
         void Push(Type record) {
             std::lock_guard<std::mutex> lock(_mutex);
