@@ -40,7 +40,7 @@ namespace gjfish {
 
         KmerCounter(GFAReader* gfa_reader);
         // 计算kmer
-        void StartCount(bool is_save_site, std::std::ofstream &kmer_site_out_file, int n);
+        void StartCount(bool is_save_site, std::ofstream &kmer_site_out_file, int n);
 
         // 1. 初始化哈希表
         void InitialHashTable();
