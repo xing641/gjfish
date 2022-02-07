@@ -74,7 +74,7 @@ namespace gjfish {
         SuperSeg ss;
         while(super_seg_buffer_queue->Pop(ss, false)) {
             std::vector<Kmer> kmers = ProduceKmerFromSuperSeg(ss);
-            for (auto kmer: kmers) {
+            for (auto &kmer: kmers) {
                 ht->add_kmer(n, coder->Encode(kmer));
                 // kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
             }
