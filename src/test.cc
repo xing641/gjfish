@@ -14,11 +14,9 @@ int main(int argc, char **argv)
     gjfish::Param param; // 从外部输入
     param.kmer_width = 1;
     param.k = 31;
-    param.threads_count = 24;
+    param.threads_count = 48;
     param.mem_size = 16000000000;
     param.result_site_dir = "kmer_site_out_file_name.bin";
-
-    std::cout << argv[1] << std::endl;
 
     auto *reader = new gjfish::GFAReader(argv[1], param);
 
