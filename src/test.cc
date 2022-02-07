@@ -9,7 +9,7 @@
 #include <thread>
 
 
-int main()
+int main(int argc, char **argv)
 {
     gjfish::Param param; // 从外部输入
     param.kmer_width = 1;
@@ -18,7 +18,9 @@ int main()
     param.mem_size = 8000000000;
     param.result_site_dir = "kmer_site_out_file_name.bin";
 
-    auto *reader = new gjfish::GFAReader("../data/GRCh38-20-0.10b.gfa", param);
+    std::cout << argv[1] << std::endl;
+
+    auto *reader = new gjfish::GFAReader(argv[1], param);
 
     reader->Start();
     reader->GenerateSuperSeg();
