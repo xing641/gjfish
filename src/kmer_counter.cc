@@ -62,7 +62,7 @@ namespace gjfish {
                     kmer.sequence = seg.seq.substr(i, gfa_reader->param.k);
                     kmer.seg_idx = seg.segIdx;
                     kmer.seg_start_site = i;
-                    ht->add_kmer(n, coder->Encode(kmer));
+                    // ht->add_kmer(n, coder->Encode(kmer));
                     kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
                 }
             }
@@ -75,7 +75,7 @@ namespace gjfish {
         while(super_seg_buffer_queue->Pop(ss, false)) {
             std::vector<Kmer> kmers = ProduceKmerFromSuperSeg(ss);
             for (auto kmer: kmers) {
-                ht->add_kmer(n, coder->Encode(kmer));
+                // ht->add_kmer(n, coder->Encode(kmer));
                 kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
             }
         }

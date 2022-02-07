@@ -1,1 +1,0 @@
-/usr/bin/c++  -g   CMakeFiles/src_stable.dir/src/gfa_reader.cc.o CMakeFiles/src_stable.dir/src/kmer_coder.cc.o CMakeFiles/src_stable.dir/src/kmer_counter.cc.o CMakeFiles/src_stable.dir/src/mem_allocator.cc.o CMakeFiles/src_stable.dir/src/lockfree_hash_map.cc.o CMakeFiles/src_stable.dir/src/test.cc.o CMakeFiles/src_stable.dir/src/param.cc.o  -o src_stable 
