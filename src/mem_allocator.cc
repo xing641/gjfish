@@ -8,7 +8,7 @@
 namespace gjfish{
     MemAllocator::MemAllocator(uint64_t total) : total(total), available(total){};
 
-    void* MemAllocator::mem_allocate(uint64_t size) {
+    void* MemAllocator::mem_allocate(uint64_t size, std::string name) {
         if (size < available){
             void* mem_ptr = malloc(size);
             if (mem_ptr != nullptr) {
@@ -16,12 +16,13 @@ namespace gjfish{
                 allocated_count++;
                 return mem_ptr;
             }
+            std::cout << name << " malloc " << size << " B failed!" << std::endl;
         }
-        std::cout << "no memory to allocate.\n";
+        std::cout << "no memory to allocate" << name << std::endl;
         exit(EXIT_FAILURE);
     }
 
-    void* MemAllocator::mem_aligned_allocate(uint64_t size) {
+    void* MemAllocator::mem_aligned_allocate(uint64_t size, std::string name) {
         if (size < available){
             void* mem_ptr;
             posix_memalign(&mem_ptr, 64, size);
@@ -30,8 +31,9 @@ namespace gjfish{
                 allocated_count++;
                 return mem_ptr;
             }
+            std::cout << name << " memalign_malloc" << size << " B failed!" << std::endl;
         }
-        std::cout << "no memory to allocate.\n";
+        std::cout << "no memory to memalign_allocate " << name << std::endl;
         exit(EXIT_FAILURE);
     }
 

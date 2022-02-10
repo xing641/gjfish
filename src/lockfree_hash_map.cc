@@ -12,15 +12,16 @@ namespace gjfish{
 
         // allocate blocks
         blocks_count = param.threads_count;
-        blocks = (Block**)ma->mem_allocate(sizeof(Block*) * blocks_count);
+        blocks = (Block**)ma->mem_allocate(sizeof(Block*) * blocks_count, "blocks");
         for (int i = 0; i < blocks_count; i++){
-            blocks[i] = (Block*)ma->mem_allocate(sizeof(Block));
+            blocks[i] = (Block*)ma->mem_aligned_allocate(sizeof(Block), "block");
         }
 
         // count nodes num
         kmer_size = sizeof(uint64_t) * param.kmer_width;
         node_size = kmer_size + sizeof(Node);
 
+        //
         uint64_t nodes_count = ma->available / (node_size * 3 + sizeof(uint64_t) * 4) * 3;
         uint64_t nodes_mem = node_size * nodes_count;
 
@@ -29,13 +30,13 @@ namespace gjfish{
         uint64_t table_capacity_max = table_mem_max / sizeof(uint64_t);
         table_capacity = max_prime_number(table_capacity_max);
         uint64_t table_mem = table_capacity * sizeof(uint64_t);
-        table = (uint64_t*)ma->mem_allocate(table_mem);
+        table = (uint64_t*)ma->mem_aligned_allocate(table_mem, "table");
         for (uint64_t i = 0; i < table_capacity; i++) {
             table[i] = 0;
         }
 
         // allocate nodes
-        nodes = (Node*)ma->mem_allocate(nodes_mem);
+        nodes = (Node*)ma->mem_aligned_allocate(nodes_mem, "nodes");
         uint64_t block_node_size = nodes_count / blocks_count;
         for (int i = 0; i < blocks_count; i++) {
             blocks[i]->start_id = 1 + block_node_size * (uint64_t)i;

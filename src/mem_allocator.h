@@ -19,8 +19,8 @@ namespace gjfish{
 
         MemAllocator(uint64_t total);
 
-        void* mem_allocate(uint64_t size);
-        void* mem_aligned_allocate(uint64_t size);
+        void* mem_allocate(uint64_t size, std::string name);
+        void* mem_aligned_allocate(uint64_t size, std::string name);
         void mem_free(void* ptr);
 
         ~MemAllocator();
