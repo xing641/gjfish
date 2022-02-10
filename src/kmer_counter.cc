@@ -14,7 +14,8 @@ namespace gjfish {
     }
 
     CompressedKmer::~CompressedKmer(){
-        delete kmer;
+        delete[] kmer;
+        delete this;
     }
 
     void KmerCounter::init_seg_buffer_queue() {

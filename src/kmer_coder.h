@@ -11,7 +11,7 @@ namespace gjfish {
     class Kmer;
     // seg_idx + start_site + strand, size = 16
     struct CompressedKmer{
-        uint64_t site{};
+        uint64_t site;
         uint64_t* kmer;
         CompressedKmer(uint64_t width);
         ~CompressedKmer();
