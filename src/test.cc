@@ -16,7 +16,7 @@ int main(int argc, char **argv)
     param.kmer_width = 1;
     param.k = 28;
     param.threads_count = atoi(argv[2]);
-    param.mem_size = 20000000000;
+    param.mem_size = 30000000000;
     param.result_site_dir = "kmer_site_out_file_name.bin";
     param.input_file = argv[1];
     // param.input_file = "../test/KmerCounter_test.gfa";
@@ -51,7 +51,7 @@ int main(int argc, char **argv)
 
     return 0;
 }
-//
+
 //int main(int argc, char **argv)
 //{
 //    gjfish::Param param; // 从外部输入
