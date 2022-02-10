@@ -17,8 +17,8 @@ int main(int argc, char **argv)
     param.threads_count = 48;
     param.mem_size = 16000000000;
     param.result_site_dir = "kmer_site_out_file_name.bin";
-    // param.input_file = argv[1];
-    param.input_file = "../test/KmerCounter_test.gfa";
+    param.input_file = argv[1];
+    // param.input_file = "../test/KmerCounter_test.gfa";
 
     auto *reader = new gjfish::GFAReader(param.input_file, param);
 
@@ -44,7 +44,7 @@ int main(int argc, char **argv)
 
     return 0;
 }
-
+//
 //int main(int argc, char **argv)
 //{
 //    gjfish::Param param; // 从外部输入
