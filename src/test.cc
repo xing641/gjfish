@@ -26,25 +26,30 @@ int main(int argc, char **argv)
     reader->Start();
     reader->GenerateSuperSeg();
 
-    auto counter = new gjfish::KmerCounter(reader);
+    int thread_counts[5] = {4, 8, 16, 24, 32};
+    for (int k : thread_counts) {
+        param.threads_count = k;
+        auto counter = new gjfish::KmerCounter(reader);
 
-    // 数据输入：两个buffer_queue 一个是segment， 一个是supersegment
-    // 初始化：线程、coder、hash_table
-    // 输出：hash_table
-    std::thread th[param.threads_count];
-    auto start = std::chrono::system_clock::now();
-    for (int i = 0; i < param.threads_count; i++) {
-        th[i] = std::thread(gjfish::KmerCountWork, std::ref(counter), i);
-    }
+        // 数据输入：两个buffer_queue 一个是segment， 一个是supersegment
+        // 初始化：线程、coder、hash_table
+        // 输出：hash_table
+        std::thread th[param.threads_count];
+        auto start = std::chrono::system_clock::now();
+        for (int i = 0; i < param.threads_count; i++) {
+            th[i] = std::thread(gjfish::KmerCountWork, std::ref(counter), i);
+        }
 
-    for (int i = 0; i < param.threads_count; i++) {
-        th[i].join();
+        for (int i = 0; i < param.threads_count; i++) {
+            th[i].join();
+        }
+        auto end = std::chrono::system_clock::now();
+        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+        std::cout << "线程" << k << "总共花费时间" << double(duration.count()) * std::chrono::microseconds::period::num /
+                                              std::chrono::microseconds::period::den << "s" << std::endl;
+        // counter->ExportHashTable();
+        // counter->ImportHashTable("/");
     }
-    auto end = std::chrono::system_clock::now();
-    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "总共花费时间" << double(duration.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds ::period::den << "s" << std::endl;
-    // counter->ExportHashTable();
-    // counter->ImportHashTable("/");
 
     return 0;
 }
