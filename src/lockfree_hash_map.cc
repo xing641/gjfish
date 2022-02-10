@@ -192,7 +192,6 @@ namespace gjfish{
 
         block->current_id = 0;
 
-        delete compressed_kmer;
         return true;
     }
 
