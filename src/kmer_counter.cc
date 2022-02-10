@@ -67,7 +67,7 @@ namespace gjfish {
                     std::cout << kmer.sequence << std::endl;
                     kmer.seg_idx = seg.segIdx;
                     kmer.seg_start_site = i;
-                    // ht->add_kmer(n, coder->Encode(kmer));
+                    ht->add_kmer(n, coder->Encode(kmer));
                     // kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
                 }
             }
@@ -117,7 +117,7 @@ namespace gjfish {
                     now_seg_site = 0;
                     now_seg++;
                 }
-                // ht->add_kmer(n, coder->Encode(now_kmer));
+                ht->add_kmer(n, coder->Encode(now_kmer));
                 // kmer_site_out_file.write((char*)&(coder->Encode(now_kmer)->site), sizeof(uint64_t));
             }
         }
