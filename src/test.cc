@@ -49,6 +49,7 @@ int main(int argc, char **argv)
                                               std::chrono::microseconds::period::den << "s" << std::endl;
         // counter->ExportHashTable();
         // counter->ImportHashTable("/");
+        delete counter;
     }
 
     return 0;
