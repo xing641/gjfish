@@ -225,16 +225,3 @@ namespace gjfish{
 
 }
 
-//int main()
-//{
-//    gjfish::Param param;
-//    auto *reader = new gjfish::GFAReader("../test/MT.gfa", param);
-//    auto *ma = new gjfish::MemAllocator(1000);
-//
-//    reader->Start();
-//    reader->GenerateSuperSeg();
-//    auto *counter = new gjfish::KmerCounter(ma, reader);
-//
-//    counter->StartCount();
-//    return 0;
-//}
