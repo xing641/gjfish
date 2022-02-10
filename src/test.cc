@@ -7,6 +7,7 @@
 #include "lockfree_hash_map.h"
 #include "mem_allocator.h"
 #include <thread>
+#include <chrono>
 
 
 int main(int argc, char **argv)
@@ -31,6 +32,7 @@ int main(int argc, char **argv)
     // 初始化：线程、coder、hash_table
     // 输出：hash_table
     std::thread th[param.threads_count];
+    auto start = std::chrono::system_clock::now();
     for (int i = 0; i < param.threads_count; i++) {
         th[i] = std::thread(gjfish::KmerCountWork, std::ref(counter), i);
     }
@@ -38,7 +40,9 @@ int main(int argc, char **argv)
     for (int i = 0; i < param.threads_count; i++) {
         th[i].join();
     }
-
+    auto end = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "总共花费时间" << double(duration.count()) * std::chrono::microseconds::period::num / std::chrono::microseconds ::period::den << "s" << std::endl;
     // counter->ExportHashTable();
     // counter->ImportHashTable("/");
 
