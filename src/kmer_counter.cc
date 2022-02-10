@@ -56,7 +56,6 @@ namespace gjfish {
         Segment seg;
         while(seg_buffer_queue->Pop(seg, false)) {
             if (seg.seq.size() >= gfa_reader->param.k) {
-                std::cout << "segment: " << seg.seq << std::endl;
                 for (int i = FindKmerStart(0, seg.seq); i <= seg.seq.size() - gfa_reader->param.k; i++) {
                     if (ENCODE_MER_TABLE[seg.seq[i + gfa_reader->param.k - 1]] == 4) {
                         i = FindKmerStart(i + gfa_reader->param.k + 1, seg.seq) - 1;
@@ -64,7 +63,6 @@ namespace gjfish {
                     }
                     Kmer kmer;
                     kmer.sequence = seg.seq.substr(i, gfa_reader->param.k);
-                    std::cout << kmer.sequence << std::endl;
                     kmer.seg_idx = seg.segIdx;
                     kmer.seg_start_site = i;
                     ht->add_kmer(n, coder->Encode(kmer));
