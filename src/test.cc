@@ -15,7 +15,7 @@ int main(int argc, char **argv)
     gjfish::Param param; // 从外部输入
     param.kmer_width = 1;
     param.k = 28;
-    param.threads_count = 16;
+    param.threads_count = atoi(argv[2]);
     param.mem_size = 20000000000;
     param.result_site_dir = "kmer_site_out_file_name.bin";
     param.input_file = argv[1];
@@ -26,31 +26,28 @@ int main(int argc, char **argv)
     reader->Start();
     reader->GenerateSuperSeg();
 
-    int thread_counts[5] = {4, 8, 16, 24, 32};
-    for (int k : thread_counts) {
-        param.threads_count = k;
-        auto counter = new gjfish::KmerCounter(reader);
+    auto counter = new gjfish::KmerCounter(reader);
 
-        // 数据输入：两个buffer_queue 一个是segment， 一个是supersegment
-        // 初始化：线程、coder、hash_table
-        // 输出：hash_table
-        std::thread th[param.threads_count];
-        auto start = std::chrono::system_clock::now();
-        for (int i = 0; i < param.threads_count; i++) {
-            th[i] = std::thread(gjfish::KmerCountWork, std::ref(counter), i);
-        }
-
-        for (int i = 0; i < param.threads_count; i++) {
-            th[i].join();
-        }
-        auto end = std::chrono::system_clock::now();
-        auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-        std::cout << "线程" << k << "总共花费时间" << double(duration.count()) * std::chrono::microseconds::period::num /
-                                              std::chrono::microseconds::period::den << "s" << std::endl;
-        // counter->ExportHashTable();
-        // counter->ImportHashTable("/");
-        delete counter;
+    // 数据输入：两个buffer_queue 一个是segment， 一个是supersegment
+    // 初始化：线程、coder、hash_table
+    // 输出：hash_table
+    std::thread th[param.threads_count];
+    auto start = std::chrono::system_clock::now();
+    for (int i = 0; i < param.threads_count; i++) {
+        th[i] = std::thread(gjfish::KmerCountWork, std::ref(counter), i);
     }
+
+    for (int i = 0; i < param.threads_count; i++) {
+        th[i].join();
+    }
+    auto end = std::chrono::system_clock::now();
+    auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
+    std::cout << "线程" << param.threads_count << "总共花费时间" << double(duration.count()) * std::chrono::microseconds::period::num /
+                                          std::chrono::microseconds::period::den << "s" << std::endl;
+    // counter->ExportHashTable();
+    // counter->ImportHashTable("/");
+    delete counter;
+    delete reader;
 
     return 0;
 }
