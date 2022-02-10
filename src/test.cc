@@ -14,7 +14,7 @@ int main(int argc, char **argv)
     gjfish::Param param; // 从外部输入
     param.kmer_width = 1;
     param.k = 31;
-    param.threads_count = 48;
+    param.threads_count = 16;
     param.mem_size = 1000000000;
     param.result_site_dir = "kmer_site_out_file_name.bin";
     param.input_file = argv[1];
