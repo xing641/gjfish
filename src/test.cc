@@ -17,8 +17,10 @@ int main(int argc, char **argv)
     param.threads_count = 48;
     param.mem_size = 16000000000;
     param.result_site_dir = "kmer_site_out_file_name.bin";
+    param.input_file = argv[1];
+    // param.input_file = "../test/KmerCounter_test.gfa";
 
-    auto *reader = new gjfish::GFAReader(argv[1], param);
+    auto *reader = new gjfish::GFAReader(param.input_file, param);
 
     reader->Start();
     reader->GenerateSuperSeg();

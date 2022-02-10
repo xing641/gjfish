@@ -15,6 +15,7 @@ namespace gjfish {
         std::string result_site_dir;
         std::string kmer_site_out_dir;
         std::string kmer_site_out_file_name = "kmer_site_out_file.tmp";
+        std::string input_file;
         uint32_t threads_count = 10;
         uint32_t mem_size = 100000;
         // ...

@@ -38,9 +38,9 @@ namespace gjfish {
         void init_super_seg_buffer_queue();
 
 
-        KmerCounter(GFAReader* gfa_reader);
+        explicit KmerCounter(GFAReader* gfa_reader);
         // 计算kmer
-        void StartCount(bool is_save_site, std::ofstream &kmer_site_out_file, int n);
+        void StartCount(bool is_save_site, std::ofstream &kmer_site_out_file, int n) const;
 
         // 1. 初始化哈希表
         void InitialHashTable();
@@ -54,10 +54,11 @@ namespace gjfish {
          *
          * */
         // 2. 从segment中生成kmer并计算
-        void CountKmerFromSeg(int n, std::ofstream &kmer_site_out_file);
+        void CountKmerFromSeg(int n, std::ofstream &kmer_site_out_file) const;
         // 3. 从superseg中生成kmer并计算
-        void CountKmerFromSuperSeg(int n, std::ofstream &kmer_site_out_file);
-        std::vector<Kmer> ProduceKmerFromSuperSeg(SuperSeg ss);
+        void CountKmerFromSuperSeg(int n, std::ofstream &kmer_site_out_file) const;
+        [[nodiscard]] std::vector<Kmer> ProduceKmerFromSuperSeg(SuperSeg ss) const;
+        int FindKmerStart(int n, std::string &seq) const;
 
         // TODO
         void ExportHashTable();
