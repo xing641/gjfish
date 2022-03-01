@@ -59,9 +59,42 @@ namespace gjfish{
     }
 
     uint64_t LockFreeHashTable::get_hashcode(uint64_t * kmer) {
+        // uint64_t tmp = 0;
+        // for (int i = 0; i < param.kmer_width; i++){
+        //     tmp += kmer[i];
+        // }
         uint64_t tmp = 0;
-        for (int i = 0; i < param.kmer_width; i++){
-            tmp += kmer[i];
+        switch (param.hash_function)
+        {
+        case 0:
+            tmp = SimpleHash(kmer);
+            break;
+        case 1:
+            tmp = SDBMHash((char *)kmer);
+            break;
+        case 2:
+            tmp = RSHash((char *)kmer);
+            break;
+        case 3:
+            tmp = JSHash((char *)kmer);
+            break;
+        case 4:
+            tmp = PJWHash((char *)kmer);
+            break;
+        case 5:
+            tmp = ELFHash((char *)kmer);
+            break;
+        case 6:
+            tmp = BKDRHash((char *)kmer);
+            break;
+        case 7:
+            tmp = DJBHash((char *)kmer);
+            break;
+        case 8:
+            tmp = APHash((char *)kmer);
+            break;
+        default:
+            break;
         }
         return tmp % table_capacity;
     }
@@ -222,6 +255,126 @@ namespace gjfish{
                 return false;
         }
         return true;
+    }
+    
+    // 哈希函数
+    uint64_t LockFreeHashTable::SimpleHash(uint64_t *str){
+        uint64_t tmp = 0;
+        for (int i = 0; i < param.kmer_width; i++){
+            tmp += str[i];
+        }
+        return tmp;
+    }
+
+    uint64_t LockFreeHashTable::SDBMHash(char *str){
+        uint64_t hash = 0;
+
+        for (int i = 0; i < param.kmer_char; i++){
+            hash = (*str++) + (hash << 6) + (hash << 16) - hash;
+        }
+
+        return hash;
+    }
+
+    // RS Hash Function
+    uint64_t LockFreeHashTable::RSHash(char *str){
+        uint64_t b = 378551;
+        uint64_t a = 63689;
+        uint64_t hash = 0;
+
+        for (int i = 0; i < param.kmer_char; i++){
+            hash = hash * a + (*str++);
+            a *= b;        
+        }
+
+        return hash;
+    }
+
+    // JS Hash Function
+    uint64_t LockFreeHashTable::JSHash(char *str){
+        uint64_t hash = 1315423911;
+
+        for (int i = 0; i < param.kmer_char; i++){
+            hash ^= ((hash << 5) + (*str++) + (hash >> 2));       
+        }
+    
+        return hash;
+    }
+
+    // P. J. Weinberger Hash Function
+    uint64_t LockFreeHashTable::PJWHash(char *str){
+        uint64_t BitsInUnignedInt = (uint64_t)(sizeof(uint64_t) * 8);
+        uint64_t ThreeQuarters	= (uint64_t)((BitsInUnignedInt  * 3) / 4);
+        uint64_t OneEighth		= (uint64_t)(BitsInUnignedInt / 8);
+        uint64_t HighBits		 = (uint64_t)(0xFFFFFFFF) << (BitsInUnignedInt - OneEighth);
+        uint64_t hash			 = 0;
+        uint64_t test			 = 0;
+        for (int i = 0; i < param.kmer_char; i++){
+            hash = (hash << OneEighth) + (*str++);
+            if ((test = hash & HighBits) != 0)
+            {
+                hash = ((hash ^ (test >> ThreeQuarters)) & (~HighBits));
+            }
+        }
+
+        return hash;
+    }
+
+    // ELF Hash Function
+    uint64_t LockFreeHashTable::ELFHash(char *str){
+        uint64_t hash = 0;
+        uint64_t x	= 0;
+
+        for (int i = 0; i < param.kmer_char; i++){
+            hash = (hash << 4) + (*str++);
+            if ((x = hash & 0xF0000000L) != 0)
+            {
+                hash ^= (x >> 24);
+                hash &= ~x;
+            }
+        }
+
+        return hash;
+    }
+
+    // BKDR Hash Function
+    uint64_t LockFreeHashTable::BKDRHash(char *str){
+        uint64_t seed = 131; // 31 131 1313 13131 131313 etc..
+        uint64_t hash = 0;
+        
+        for (int i = 0; i < param.kmer_char; i++){
+            hash = hash * seed + (*str++);
+        } 
+
+        return hash;
+    }
+
+    // DJB Hash Function
+    uint64_t LockFreeHashTable::DJBHash(char *str){
+        uint64_t hash = 5381;
+        for (int i = 0; i < param.kmer_char; i++){
+            hash += (hash << 5) + (*str++);
+        } 
+
+        return hash;
+    }
+
+    // AP Hash Function
+    uint64_t LockFreeHashTable::APHash(char *str){
+        uint64_t hash = 0;
+        int i;
+        for (int i = 0; i < param.kmer_char; i++){
+            if ((i & 1) == 0)
+            {
+                hash ^= ((hash << 7) ^ (*str++) ^ (hash >> 3));
+            }
+            else
+            {
+                hash ^= (~((hash << 11) ^ (*str++) ^ (hash >> 5)));
+            }
+        } 
+
+        return hash;
     }
 
 }

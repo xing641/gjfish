@@ -161,7 +161,7 @@ namespace gjfish {
 
     void KmerCountWork(KmerCounter *kc, int n){
         std::ofstream kmer_site_out_file;
-        kmer_site_out_file.open("./" + kc->gfa_reader->param.kmer_site_out_file_name + "_" + std::to_string(n), std::ios::out|std::ios::binary);
+        // kmer_site_out_file.open("./" + kc->gfa_reader->param.kmer_site_out_file_name + "_" + std::to_string(n), std::ios::out|std::ios::binary);
         kc->StartCount(true, kmer_site_out_file, n);
     }
 }

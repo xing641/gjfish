@@ -15,8 +15,10 @@ int main(int argc, char **argv)
     gjfish::Param param; // 从外部输入
     param.kmer_width = 1;
     param.k = 28;
+    param.kmer_char = 4;
     param.threads_count = atoi(argv[2]);
-    param.mem_size = 30000000000;
+    param.hash_function = atoi(argv[3]);
+    param.mem_size = 20000000000;
     param.result_site_dir = "kmer_site_out_file_name.bin";
     param.input_file = argv[1];
     // param.input_file = "../test/KmerCounter_test.gfa";
@@ -42,12 +44,15 @@ int main(int argc, char **argv)
     }
     auto end = std::chrono::system_clock::now();
     auto duration = std::chrono::duration_cast<std::chrono::microseconds>(end - start);
-    std::cout << "线程" << param.threads_count << "总共花费时间" << double(duration.count()) * std::chrono::microseconds::period::num /
+    std::cout << "线程" << param.threads_count 
+              << " 哈希函数：" << param.hash_function
+              << " K值：" << param.k
+              << " 总共花费时间" << double(duration.count()) * std::chrono::microseconds::period::num /
                                           std::chrono::microseconds::period::den << "s" << std::endl;
     // counter->ExportHashTable();
     // counter->ImportHashTable("/");
-    delete counter;
-    delete reader;
+    // delete counter;
+    // delete reader;
 
     return 0;
 }

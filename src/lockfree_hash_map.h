@@ -59,6 +59,35 @@ namespace gjfish{
         bool add_kmer(size_t n, CompressedKmer* compressed_kmer);
         void copy_kmer(uint64_t* kmer1, uint64_t* kmer2);
 
+        /* 哈希函数 */
+        // simple function
+        uint64_t SimpleHash(uint64_t *kmer);
+
+        // hash_function
+        uint64_t SDBMHash(char *str);
+
+        // RS Hash Function
+        uint64_t RSHash(char *str);
+
+        // JS Hash Function
+        uint64_t JSHash(char *str);
+
+        // P. J. Weinberger Hash Function
+        uint64_t PJWHash(char *str);
+
+        // ELF Hash Function
+        uint64_t ELFHash(char *str);
+
+        // BKDR Hash Function
+        uint64_t BKDRHash(char *str);
+
+        // DJB Hash Function
+        uint64_t DJBHash(char *str);
+
+
+        // AP Hash Function
+        uint64_t APHash(char *str);
+
     private:
         uint64_t table_capacity = 0;
         std::mutex mu;
