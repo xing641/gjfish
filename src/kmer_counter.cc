@@ -19,9 +19,11 @@ namespace gjfish {
     }
 
     void KmerCounter::init_seg_buffer_queue() {
-        seg_buffer_queue = new BufferQueue<Segment>;
+        seg_buffer_queue = new BufferQueue<Segment>[gfa_reader->param.threads_count];
+        uint64_t i = 0;
         for (const auto& it: gfa_reader->segments){
-            seg_buffer_queue->Push(it.second);
+            seg_buffer_queue[i % gfa_reader->param.threads_count].Push(it.second);
+            i++;
         }
     }
 
@@ -55,7 +57,7 @@ namespace gjfish {
 
     void KmerCounter::CountKmerFromSeg(int n, std::ofstream &kmer_site_out_file) const {
         Segment seg;
-        while(seg_buffer_queue->Pop(seg, false)) {
+        while(seg_buffer_queue[n].Pop(seg, false)) {
             if (seg.seq.size() >= gfa_reader->param.k) {
                 for (int i = FindKmerStart(0, seg.seq); i <= seg.seq.size() - gfa_reader->param.k; i++) {
                     if (ENCODE_MER_TABLE[seg.seq[i + gfa_reader->param.k - 1]] == 4) {
@@ -68,6 +70,24 @@ namespace gjfish {
                     kmer.seg_start_site = i;
                     ht->add_kmer(n, coder->Encode(kmer));
                     // kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
+                }
+            }
+        }
+        for (int queue_num = 0; queue_num < gfa_reader->param.threads_count; queue_num++){
+            while(seg_buffer_queue[queue_num].Pop(seg, false)) {
+                if (seg.seq.size() >= gfa_reader->param.k) {
+                    for (int i = FindKmerStart(0, seg.seq); i <= seg.seq.size() - gfa_reader->param.k; i++) {
+                        if (ENCODE_MER_TABLE[seg.seq[i + gfa_reader->param.k - 1]] == 4) {
+                            i = FindKmerStart(i + gfa_reader->param.k + 1, seg.seq) - 1;
+                            continue;
+                        }
+                        Kmer kmer;
+                        kmer.sequence = seg.seq.substr(i, gfa_reader->param.k);
+                        kmer.seg_idx = seg.segIdx;
+                        kmer.seg_start_site = i;
+                        ht->add_kmer(n, coder->Encode(kmer));
+                        // kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
+                    }
                 }
             }
         }

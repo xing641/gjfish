@@ -13,12 +13,12 @@
 int main(int argc, char **argv)
 {
     gjfish::Param param; // 从外部输入
-    param.kmer_width = 1;
-    param.k = 28;
-    param.kmer_char = 4;
+    param.k = atoi(argv[5]);
+    param.kmer_width = param.k / 32 + ((param.k % 32 == 0)? 0 : 1);
+    param.kmer_char = param.k / 8 + ((param.k % 8 == 0)? 0 : 1);
     param.threads_count = atoi(argv[2]);
     param.hash_function = atoi(argv[3]);
-    param.mem_size = 20000000000;
+    param.mem_size = atoi(argv[4]);
     param.result_site_dir = "kmer_site_out_file_name.bin";
     param.input_file = argv[1];
     // param.input_file = "../test/KmerCounter_test.gfa";
