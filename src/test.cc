@@ -18,7 +18,8 @@ int main(int argc, char **argv)
     param.kmer_char = param.k / 8 + ((param.k % 8 == 0)? 0 : 1);
     param.threads_count = atoi(argv[2]);
     param.hash_function = atoi(argv[3]);
-    param.mem_size = atoi(argv[4]);
+    param.mem_size = atol(argv[4]) * 1000000000;
+    // std::cout << param.mem_size << std::endl;
     param.result_site_dir = "kmer_site_out_file_name.bin";
     param.input_file = argv[1];
     // param.input_file = "../test/KmerCounter_test.gfa";

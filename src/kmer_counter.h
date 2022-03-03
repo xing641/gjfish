@@ -10,6 +10,7 @@
 #include "mem_allocator.h"
 #include "buffer_queue.h"
 #include <fstream>
+#include <ctime>
 
 namespace gjfish {
 
