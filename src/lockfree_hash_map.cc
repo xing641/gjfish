@@ -174,7 +174,7 @@ namespace gjfish{
         return node_id;
     }
 
-    bool LockFreeHashTable::add_kmer(size_t n, CompressedKmer* compressed_kmer) {
+    bool LockFreeHashTable::add_kmer(size_t n, CompressedKmer &compressed_kmer) {
         Block* block = blocks[n];
 
         if (!(block->synced) && (block->current_id == 0)) {
@@ -194,10 +194,10 @@ namespace gjfish{
             block->synced = true;
         }
 
-        size_t table_idx = get_hashcode(compressed_kmer->kmer);
+        size_t table_idx = get_hashcode(compressed_kmer.kmer);
 
         uint64_t * collision_list = &(table[table_idx]);
-        uint64_t node_id = collision_list_add_kmer(&collision_list, compressed_kmer->kmer);
+        uint64_t node_id = collision_list_add_kmer(&collision_list, compressed_kmer.kmer);
 
         if (node_id != 0) {
             return true;
@@ -211,12 +211,12 @@ namespace gjfish{
         }
 
         Node *node = get_node(block->current_id);
-        copy_kmer(node->kmer, compressed_kmer->kmer);
+        copy_kmer(node->kmer, compressed_kmer.kmer);
         node->cnt = 1;
         node->next = 0;
 
         do {
-            node_id = collision_list_add_kmer(&collision_list, compressed_kmer->kmer);
+            node_id = collision_list_add_kmer(&collision_list, compressed_kmer.kmer);
             if (node_id != 0) {
                 // Mark the node invalid.
                 node->cnt = 0;

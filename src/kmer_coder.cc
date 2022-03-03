@@ -6,28 +6,27 @@
 namespace gjfish {
     Coder::Coder(gjfish::Param param) : param(param){};
 
-    CompressedKmer* Coder::Encode(Kmer& kmer) {
-        CompressedKmer *compressed_kmer = new CompressedKmer(param.kmer_width);
+    void Coder::Encode(Kmer& kmer, CompressedKmer &compressed_kmer) {
+        // CompressedKmer *compressed_kmer = new CompressedKmer(param.kmer_width);
         EncodeSite(kmer, compressed_kmer);
         EncodeKmer(kmer, compressed_kmer);
-        return compressed_kmer;
     }
     // strand(1) + seg_start_site(31) + seg_idx(32, string)
-    void Coder::EncodeSite(Kmer &kmer, CompressedKmer* compressed_kmer){
+    void Coder::EncodeSite(Kmer &kmer, CompressedKmer &compressed_kmer){
         uint64_t site = 0;
         site |= kmer.strand;
         site <<= 31;
         site |= kmer.seg_start_site;
         site <<=32;
         site |= SegIdxToInt(kmer.seg_idx); //TODO seg_idx 需要转化成数字
-        compressed_kmer->site = site;
+        compressed_kmer.site = site;
     }
 
-    void Coder::EncodeKmer(Kmer &kmer, CompressedKmer* compressed_kmer){
+    void Coder::EncodeKmer(Kmer &kmer, CompressedKmer &compressed_kmer){
         for (int i = 0; i < param.kmer_width; i++){
             for (int j = i * 32; j < (i + 1) * 32 && j < param.k; j++){
-                compressed_kmer->kmer[i] <<= 2;
-                compressed_kmer->kmer[i] |= ENCODE_MER_TABLE[kmer.sequence[j]];
+                compressed_kmer.kmer[i] <<= 2;
+                compressed_kmer.kmer[i] |= ENCODE_MER_TABLE[kmer.sequence[j]];
             }
         }
     }

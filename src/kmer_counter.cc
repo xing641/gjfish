@@ -14,8 +14,7 @@ namespace gjfish {
     }
 
     CompressedKmer::~CompressedKmer(){
-        delete[] kmer;
-        delete this;
+        free(kmer);
     }
 
     void KmerCounter::init_seg_buffer_queue() {
@@ -47,7 +46,7 @@ namespace gjfish {
         if (is_save_site){
 
             
-            CountKmerFromSeg(n, kmer_site_out_file);
+            // CountKmerFromSeg(n, kmer_site_out_file);
             CountKmerFromSuperSeg(n, kmer_site_out_file);
         } else {
             // TODO
@@ -56,6 +55,8 @@ namespace gjfish {
 
     void KmerCounter::CountKmerFromSeg(int n, std::ofstream &kmer_site_out_file) const {
         Segment seg;
+        Kmer kmer;
+        CompressedKmer compressed_kmer(gfa_reader->param.kmer_width);
         // clock_t t0 = 0;
         // clock_t t1 = 0;
         while(seg_buffer_queue[n].Pop(seg, false)) {
@@ -66,14 +67,14 @@ namespace gjfish {
                         i = FindKmerStart(i + gfa_reader->param.k + 1, seg.seq) - 1;
                         continue;
                     }
-                    Kmer kmer;
                     kmer.sequence = seg.seq.substr(i, gfa_reader->param.k);
                     kmer.seg_idx = seg.segIdx;
                     kmer.seg_start_site = i;
                     // t1 += clock() - shift_start;
                     // timer
                     // clock_t add_start = clock();
-                    ht->add_kmer(n, coder->Encode(kmer));
+                    coder->Encode(kmer, compressed_kmer);
+                    ht->add_kmer(n, compressed_kmer);
                     // t0 += clock() - add_start;
 
                     // kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
@@ -89,11 +90,11 @@ namespace gjfish {
                             i = FindKmerStart(i + gfa_reader->param.k + 1, seg.seq) - 1;
                             continue;
                         }
-                        Kmer kmer;
                         kmer.sequence = seg.seq.substr(i, gfa_reader->param.k);
                         kmer.seg_idx = seg.segIdx;
                         kmer.seg_start_site = i;
-                        ht->add_kmer(n, coder->Encode(kmer));
+                        coder->Encode(kmer, compressed_kmer);
+                        ht->add_kmer(n, compressed_kmer);
                         // kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
                     }
                 }
@@ -119,6 +120,8 @@ namespace gjfish {
 
     void KmerCounter::CountKmerFromSuperSeg(int n, std::ofstream &kmer_site_out_file) const {
         SuperSeg ss;
+        CompressedKmer compressed_kmer(gfa_reader->param.kmer_width);
+        Kmer now_kmer;
         while(super_seg_buffer_queue->Pop(ss, false)) {
             int len = 0;
             std::string seq;
@@ -135,7 +138,6 @@ namespace gjfish {
                     now = FindKmerStart(now + gfa_reader->param.k + 1, seq) - 1;
                     continue;
                 }
-                Kmer now_kmer;
                 now_kmer.sequence = seq.substr(now, gfa_reader->param.k);
                 now_kmer.seg_start_site = now_seg_site;
                 now_kmer.seg_idx = ss[now_seg].segIdx;
@@ -144,7 +146,8 @@ namespace gjfish {
                     now_seg_site = 0;
                     now_seg++;
                 }
-                ht->add_kmer(n, coder->Encode(now_kmer));
+                coder->Encode(now_kmer, compressed_kmer);
+                ht->add_kmer(n, compressed_kmer);
                 // kmer_site_out_file.write((char*)&(coder->Encode(now_kmer)->site), sizeof(uint64_t));
             }
         }

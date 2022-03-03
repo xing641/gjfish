@@ -56,7 +56,7 @@ namespace gjfish{
         uint64_t polling_request_node(size_t n);
 
         uint64_t collision_list_add_kmer(uint64_t** list, uint64_t* kmer);
-        bool add_kmer(size_t n, CompressedKmer* compressed_kmer);
+        bool add_kmer(size_t n, CompressedKmer &compressed_kmer);
         void copy_kmer(uint64_t* kmer1, uint64_t* kmer2);
 
         /* 哈希函数 */
