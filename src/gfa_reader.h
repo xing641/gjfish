@@ -86,7 +86,7 @@ namespace gjfish{
     const char STRAND_CHAR[2] = {'-', '+'};
 
     std::vector<std::string> ExtractStringInfo(const std::string& tmp, char delim);
-    std::string ReverseComplement(std::string sequence);
+    // std::string ReverseComplement(std::string sequence);
     bool judgeStrand(std::string str);
     std::string SsfToString(SuperSegFragment ssf);
 }

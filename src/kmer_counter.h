@@ -63,9 +63,12 @@ namespace gjfish {
 
         // TODO
         void ExportHashTable();
-        void ImportHashTable(std::string file_path);
+        void ImportHashTable(std::string file_path) const;
 
         ~KmerCounter();
+
+        // utils
+        std::string ReverseComplement(std::string &sequence);
 
     };
 

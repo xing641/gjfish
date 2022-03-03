@@ -124,7 +124,7 @@ namespace gjfish {
         Kmer now_kmer;
         while(super_seg_buffer_queue->Pop(ss, false)) {
             int len = 0;
-            std::string seq;
+            std::string seq = "";
             uint32_t start = (ss[0].seq.size() >= gfa_reader->param.k) ? (ss[0].seq.size() - gfa_reader->param.k + 1) : 0;
             for (auto & s : ss) {
                 len += s.seq.size();
@@ -182,6 +182,15 @@ namespace gjfish {
             }
         }
         return kmers;
+    }
+
+    std::string KmerCounter::ReverseComplement(std::string &sequence) const{
+        int n = sequence.size();
+        std::string res(n, 'x');
+        for (int i = n - 1; i >= 0; i--) {
+            res[n - i - 1] = REVERSE_TABLE[sequence[i]];
+        }
+        return res;
     }
 
     KmerCounter::~KmerCounter(){

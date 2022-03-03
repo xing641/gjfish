@@ -210,14 +210,6 @@ namespace gjfish{
         return splitStr;
     }
 
-    std::string ReverseComplement(std::string sequence) {
-        int n = sequence.size();
-        std::string res(n, 'x');
-        for (int i = n - 1; i >= 0; i--) {
-            res[n - i - 1] = REVERSE_TABLE[sequence[i]];
-        }
-        return res;
-    }
 
     std::string SsfToString(SuperSegFragment ssf) {
         return ssf.segIdx + " " + ssf.strand + " " + ssf.seq + " SR:i:" + ssf.SR + " SO:i:" + ssf.SO + " SN:Z:" + ssf.SN;
