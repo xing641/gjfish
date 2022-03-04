@@ -27,9 +27,10 @@ namespace gjfish {
     }
 
     void KmerCounter::init_super_seg_buffer_queue() {
-        super_seg_buffer_queue = new BufferQueue<SuperSeg>;
+        super_seg_buffer_queue = new BufferQueue<SuperSeg>[gfa_reader->param.threads_count];
+        uint64_t i = 0;
         for (const auto& it: gfa_reader->superSegments) {
-            super_seg_buffer_queue->Push(it);
+            super_seg_buffer_queue[i % gfa_reader->param.threads_count].Push(it);
         }
     }
 
@@ -46,7 +47,7 @@ namespace gjfish {
         if (is_save_site){
 
             
-            // CountKmerFromSeg(n, kmer_site_out_file);
+            CountKmerFromSeg(n, kmer_site_out_file);
             CountKmerFromSuperSeg(n, kmer_site_out_file);
         } else {
             // TODO
@@ -82,30 +83,30 @@ namespace gjfish {
             }
         }
         // kmer_site_out_file << "add_time: " << t0 << "shift_time: " << t1 << std::endl;
-        for (int queue_num = 0; queue_num < gfa_reader->param.threads_count; queue_num++){
-            while(seg_buffer_queue[queue_num].Pop(seg, false)) {
-                if (seg.seq.size() >= gfa_reader->param.k) {
-                    for (int i = FindKmerStart(0, seg.seq); i <= seg.seq.size() - gfa_reader->param.k; i++) {
-                        if (ENCODE_MER_TABLE[seg.seq[i + gfa_reader->param.k - 1]] == 4) {
-                            i = FindKmerStart(i + gfa_reader->param.k + 1, seg.seq) - 1;
-                            continue;
-                        }
-                        kmer.sequence = seg.seq.substr(i, gfa_reader->param.k);
-                        kmer.seg_idx = seg.segIdx;
-                        kmer.seg_start_site = i;
-                        coder->Encode(kmer, compressed_kmer);
-                        ht->add_kmer(n, compressed_kmer);
-                        // kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
-                    }
-                }
-            }
-        }
+        // for (int queue_num = 0; queue_num < gfa_reader->param.threads_count; queue_num++){
+        //     while(seg_buffer_queue[queue_num].Pop(seg, false)) {
+        //         if (seg.seq.size() >= gfa_reader->param.k) {
+        //             for (int i = FindKmerStart(0, seg.seq); i <= seg.seq.size() - gfa_reader->param.k; i++) {
+        //                 if (ENCODE_MER_TABLE[seg.seq[i + gfa_reader->param.k - 1]] == 4) {
+        //                     i = FindKmerStart(i + gfa_reader->param.k + 1, seg.seq) - 1;
+        //                     continue;
+        //                 }
+        //                 kmer.sequence = seg.seq.substr(i, gfa_reader->param.k);
+        //                 kmer.seg_idx = seg.segIdx;
+        //                 kmer.seg_start_site = i;
+        //                 coder->Encode(kmer, compressed_kmer);
+        //                 ht->add_kmer(n, compressed_kmer);
+        //                 // kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
+        //             }
+        //         }
+        //     }
+        // }
     }
 
     int KmerCounter::FindKmerStart(int n, std::string &seq) const{
         int start = n, now = n;
         while(true){
-            if (now > seq.size() || now - start + 1 >= gfa_reader->param.k){
+            if (now >= seq.size() || now - start + 1 >= gfa_reader->param.k){
                 break;
             }
             if (ENCODE_MER_TABLE[seq[now]] != 4){
@@ -122,13 +123,14 @@ namespace gjfish {
         SuperSeg ss;
         CompressedKmer compressed_kmer(gfa_reader->param.kmer_width);
         Kmer now_kmer;
-        while(super_seg_buffer_queue->Pop(ss, false)) {
+        while(super_seg_buffer_queue[n].Pop(ss, false)) {
             int len = 0;
             std::string seq = "";
             uint32_t start = (ss[0].seq.size() >= gfa_reader->param.k) ? (ss[0].seq.size() - gfa_reader->param.k + 1) : 0;
-            for (auto & s : ss) {
+            for (const auto & s : ss) {
                 len += s.seq.size();
-                seq += (s.strand == "+")? s.seq : ReverseComplement(s.seq);
+                // seq += (s.strand == "+")? s.seq : ReverseComplement(s.seq);
+                seq += s.seq;
             }
             uint32_t end = (ss[ss.size() - 1].seq.size() >= gfa_reader->param.k) ? len - 1 - (ss[ss.size() - 1].seq.size() - gfa_reader->param.k) : len;
             uint32_t now_seg_site = start;
@@ -151,6 +153,38 @@ namespace gjfish {
                 // kmer_site_out_file.write((char*)&(coder->Encode(now_kmer)->site), sizeof(uint64_t));
             }
         }
+        // for (int queue_num = 0; queue_num < gfa_reader->param.threads_count; queue_num++){
+        //     while(super_seg_buffer_queue[queue_num].Pop(ss, false)) {
+        //         int len = 0;
+        //         std::string seq = "";
+        //         uint32_t start = (ss[0].seq.size() >= gfa_reader->param.k) ? (ss[0].seq.size() - gfa_reader->param.k + 1) : 0;
+        //         for (const auto & s : ss) {
+        //             len += s.seq.size();
+        //             // seq += (s.strand == "+")? s.seq : ReverseComplement(s.seq);
+        //             seq += s.seq;
+        //         }
+        //         uint32_t end = (ss[ss.size() - 1].seq.size() >= gfa_reader->param.k) ? len - 1 - (ss[ss.size() - 1].seq.size() - gfa_reader->param.k) : len;
+        //         uint32_t now_seg_site = start;
+        //         uint32_t now_seg = 0;
+        //         for (uint32_t now = FindKmerStart(start, seq); now + gfa_reader->param.k < end; now++) {
+        //             if (ENCODE_MER_TABLE[seq[now + gfa_reader->param.k - 1]] == 4) {
+        //                 now = FindKmerStart(now + gfa_reader->param.k + 1, seq) - 1;
+        //                 continue;
+        //             }
+        //             now_kmer.sequence = seq.substr(now, gfa_reader->param.k);
+        //             now_kmer.seg_start_site = now_seg_site;
+        //             now_kmer.seg_idx = ss[now_seg].segIdx;
+        //             now_seg_site++;
+        //             if (now_seg_site == ss[now_seg].seq.size()) {
+        //                 now_seg_site = 0;
+        //                 now_seg++;
+        //             }
+        //             coder->Encode(now_kmer, compressed_kmer);
+        //             ht->add_kmer(n, compressed_kmer);
+        //             // kmer_site_out_file.write((char*)&(coder->Encode(now_kmer)->site), sizeof(uint64_t));
+        //         }
+        //     }
+        // }
     }
 
     std::vector<Kmer> KmerCounter::ProduceKmerFromSuperSeg(SuperSeg ss) const {
@@ -184,7 +218,7 @@ namespace gjfish {
         return kmers;
     }
 
-    std::string KmerCounter::ReverseComplement(std::string &sequence) const{
+    std::string KmerCounter::ReverseComplement(const std::string &sequence) const{
         int n = sequence.size();
         std::string res(n, 'x');
         for (int i = n - 1; i >= 0; i--) {

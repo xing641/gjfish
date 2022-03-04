@@ -1,7 +1,10 @@
+set(CMAKE_C_COMPILER "/data/home/zxyang/zx_path/bin/gcc")
+set(CMAKE_CXX_COMPILER "/data/home/zxyang/zx_path/bin/g++")
 cmake_minimum_required(VERSION 3.10)
 project(src_stable C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+
 
 include_directories(.)
 include_directories(src)

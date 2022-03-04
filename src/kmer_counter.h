@@ -68,7 +68,7 @@ namespace gjfish {
         ~KmerCounter();
 
         // utils
-        std::string ReverseComplement(std::string &sequence);
+        std::string ReverseComplement(const std::string &sequence) const;
 
     };
 

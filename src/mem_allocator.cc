@@ -9,7 +9,7 @@ namespace gjfish{
     MemAllocator::MemAllocator(uint64_t total) : total(total), available(total){};
 
     void* MemAllocator::mem_allocate(uint64_t size, std::string name) {
-        if (size < available){
+        if (size <= available){
             void* mem_ptr = malloc(size);
             if (mem_ptr != nullptr) {
                 available -= size;
@@ -23,10 +23,10 @@ namespace gjfish{
     }
 
     void* MemAllocator::mem_aligned_allocate(uint64_t size, std::string name) {
-        if (size < available){
+        if (size <= available){
             void* mem_ptr;
-            posix_memalign(&mem_ptr, 64, size);
-            if (mem_ptr != nullptr) {
+            int result = posix_memalign(&mem_ptr, 64, size);
+            if (result == 0) {
                 available -= size;
                 allocated_count++;
                 return mem_ptr;

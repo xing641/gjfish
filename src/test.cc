@@ -37,7 +37,7 @@ int main(int argc, char **argv)
     std::thread th[param.threads_count];
     auto start = std::chrono::system_clock::now();
     for (int i = 0; i < param.threads_count; i++) {
-        th[i] = std::thread(gjfish::KmerCountWork, std::ref(counter), i);
+        th[i] = std::thread(gjfish::KmerCountWork, counter, i);
     }
 
     for (int i = 0; i < param.threads_count; i++) {
