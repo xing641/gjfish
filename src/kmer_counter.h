@@ -69,7 +69,7 @@ namespace gjfish {
 
         // utils
         std::string ReverseComplement(const std::string &sequence) const;
-
+        void CountATCGfreq(int n, std::ofstream &kmer_site_out_file) const;
     };
 
     void KmerCountWork(KmerCounter *kc, int n);

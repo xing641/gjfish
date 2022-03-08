@@ -30,20 +30,11 @@ namespace gjfish {
             _condition.notify_one();
         }
 
-        bool Pop(Type &record, bool isBlocked = true) {
-            if (isBlocked) {
-                std::unique_lock<std::mutex> lock(_mutex);
-                while (_queue.empty()) {
-                    _condition.wait(lock);
-                }
-            } else // If user wants to retrieve data in non-blocking mode
-            {
-                std::lock_guard<std::mutex> lock(_mutex);
-                if (_queue.empty()) {
-                    return false;
-                }
-            }
+        bool Pop(Type &record) {
             std::lock_guard<std::mutex> lock(_mutex);
+            if (_queue.empty()) {
+                return false;
+            }
             record = std::move(_queue.front());
             _queue.pop();
             return true;
