@@ -93,10 +93,14 @@ namespace gjfish{
         case 8:
             tmp = APHash((char *)kmer);
             break;
+        case 9:
+            tmp = hash64shift(kmer);
+        case 10:
+            tmp = MurmurHash3Mixer(kmer);
         default:
             break;
         }
-        return tmp % table_capacity;
+        return tmp - tmp / table_capacity * table_capacity;
     }
 
     void LockFreeHashTable::copy_kmer(uint64_t *kmer1, uint64_t *kmer2){
@@ -146,7 +150,7 @@ namespace gjfish{
         return 0;
     }
 
-    uint64_t LockFreeHashTable::collision_list_add_kmer(uint64_t **list, uint64_t* kmer) {
+    uint64_t LockFreeHashTable::collision_list_add_kmer(uint64_t **list, uint64_t* kmer, uint64_t &new_node_cnt) {
         uint64_t node_id;
         uint64_t* p = *list;
         while (true) {
@@ -155,7 +159,7 @@ namespace gjfish{
             if (node_id == 0) {
                 break;
             }
-
+            new_node_cnt++;
             Node* node = get_node(node_id);
             if (is_the_same_kmer(node->kmer, kmer)) {
                 uint32_t count;
@@ -174,7 +178,7 @@ namespace gjfish{
         return node_id;
     }
 
-    bool LockFreeHashTable::add_kmer(size_t n, CompressedKmer &compressed_kmer) {
+    bool LockFreeHashTable::add_kmer(size_t n, CompressedKmer &compressed_kmer, uint64_t &new_node_cnt, uint64_t &total_collsion_cnt, uint64_t &max_collsion_cnt) {
         Block* block = blocks[n];
 
         if (!(block->synced) && (block->current_id == 0)) {
@@ -197,12 +201,16 @@ namespace gjfish{
         size_t table_idx = get_hashcode(compressed_kmer.kmer);
 
         uint64_t * collision_list = &(table[table_idx]);
-        uint64_t node_id = collision_list_add_kmer(&collision_list, compressed_kmer.kmer);
+        uint64_t node_id = collision_list_add_kmer(&collision_list, compressed_kmer.kmer, new_node_cnt);
 
+        // 更新操作
         if (node_id != 0) {
             return true;
         }
-
+        
+        // 计算冲突次数
+        total_collsion_cnt++;
+        
         // If some thread has set keys_locked, assume this thread noticed the change here and return false, while the other
         // thread has not seen the change and is adding a new node to hash table, then it may cause inconsistency.
         // Checking if this thread has been synced is important.
@@ -210,13 +218,14 @@ namespace gjfish{
             return false;
         }
 
+        // 插入操作
         Node *node = get_node(block->current_id);
         copy_kmer(node->kmer, compressed_kmer.kmer);
         node->cnt = 1;
         node->next = 0;
 
         do {
-            node_id = collision_list_add_kmer(&collision_list, compressed_kmer.kmer);
+            node_id = collision_list_add_kmer(&collision_list, compressed_kmer.kmer, new_node_cnt);
             if (node_id != 0) {
                 // Mark the node invalid.
                 node->cnt = 0;
@@ -377,5 +386,34 @@ namespace gjfish{
         return hash;
     }
 
+    uint64_t LockFreeHashTable::hash64shift(uint64_t *str){
+        uint64_t key = 0;
+
+        for (int i = 0; i < param.kmer_width; i++){
+            key += str[i];
+            key = (~key) + (key << 21); // key = (key << 21) - key - 1;
+            key = key ^ (key >> 24);
+            key = (key + (key << 3)) + (key << 8); // key * 265
+            key = key ^ (key >> 14);
+            key = (key + (key << 2)) + (key << 4); // key * 21
+            key = key ^ (key >> 28);
+            key = key + (key << 31);
+        }
+
+        return key;
+    }
+    uint64_t LockFreeHashTable::MurmurHash3Mixer(uint64_t *str){
+        uint64_t key = 0;
+        for (int i = 0; i < param.kmer_width; i++){
+            key += str[i];
+            key ^= (key >> 30);
+            key *= 0xbf58476d1ce4e5b9;
+            key ^= (key >> 27);
+
+            key *= 0x94d049bb133111eb;
+            key ^= (key >> 31);
+        }
+        return key;
+    }
 }
 

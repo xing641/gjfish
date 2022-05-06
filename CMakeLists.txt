@@ -4,7 +4,13 @@ cmake_minimum_required(VERSION 3.10)
 project(src_stable C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
+if(NOT CMAKE_BUILD_TYPE)
+  set(CMAKE_BUILD_TYPE Release)
+endif()
 
+# set(CMAKE_CXX_FLAGS "-Wall -Wextra")
+# set(CMAKE_CXX_FLAGS_DEBUG "-g")
+# set(CMAKE_CXX_FLAGS_RELEASE "-O2")
 
 include_directories(.)
 include_directories(src)
@@ -37,7 +43,10 @@ add_executable(src_stable
         src/mem_allocator.h
         src/lockfree_hash_map.cc
         src/lockfree_hash_map.h
+        src/buffer_queue.h
+        src/buffer_queue.cc
         src/test.cc
+        # src/graph_gen.cpp
         src/param.cc
         src/param.h)
 

@@ -55,8 +55,8 @@ namespace gjfish{
         uint64_t request_node(size_t n);
         uint64_t polling_request_node(size_t n);
 
-        uint64_t collision_list_add_kmer(uint64_t** list, uint64_t* kmer);
-        bool add_kmer(size_t n, CompressedKmer &compressed_kmer);
+        uint64_t collision_list_add_kmer(uint64_t** list, uint64_t* kmer, uint64_t &new_node_cnt);
+        bool add_kmer(size_t n, CompressedKmer &compressed_kmer, uint64_t &new_node_cnt, uint64_t &total_collsion_cnt, uint64_t &max_collsion_cnt);
         void copy_kmer(uint64_t* kmer1, uint64_t* kmer2);
 
         /* 哈希函数 */
@@ -87,6 +87,10 @@ namespace gjfish{
 
         // AP Hash Function
         uint64_t APHash(char *str);
+
+        // 整数哈希
+        uint64_t hash64shift(uint64_t *str);
+        uint64_t MurmurHash3Mixer(uint64_t *str);
 
     private:
         uint64_t table_capacity = 0;

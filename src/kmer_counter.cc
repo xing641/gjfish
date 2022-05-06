@@ -41,21 +41,33 @@ namespace gjfish {
         coder = new Coder(gfa_reader->param);
         ma = gfa_reader->ma;
         ht = new gjfish::LockFreeHashTable(ma, gfa_reader->param);
+        total_collsion_cnt = new uint64_t[gfa_reader->param.threads_count]();
+        max_collsion_cnt = new uint64_t[gfa_reader->param.threads_count]();
+        new_node_cnt = new uint64_t[gfa_reader->param.threads_count]();
     }
 
     void KmerCounter::StartCount(bool is_save_site, std::ofstream &kmer_site_out_file, int n) const{
         if (is_save_site){
+            // 计算冲突次数
+            // CountKmerFromSeg(n, kmer_site_out_file, this->total_collsion_cnt[n], this->max_collsion_cnt[n], this->new_node_cnt[n]);
+            // CountKmerFromSuperSeg(n, kmer_site_out_file, this->total_collsion_cnt[n], this->max_collsion_cnt[n], this->new_node_cnt[n]);
 
+            uint64_t total_collsion_cnt = 0;
+            uint64_t max_collsion_cnt = 0;
+            uint64_t new_node_cnt = 0;
+            CountKmerFromSeg(n, kmer_site_out_file, total_collsion_cnt, max_collsion_cnt, new_node_cnt);
+            CountKmerFromSuperSeg(n, kmer_site_out_file, total_collsion_cnt, max_collsion_cnt, new_node_cnt);            
             
-            CountKmerFromSeg(n, kmer_site_out_file);
-            CountKmerFromSuperSeg(n, kmer_site_out_file);
             // CountATCGfreq(n, kmer_site_out_file);
+            
+            // kmer_site_out_file << total_collsion_cnt << " " << ht->blocks[n]->next_id - ht->blocks[n]->start_id << " " << new_node_cnt << std::endl;
+            
         } else {
             // TODO
         }
     }
 
-    void KmerCounter::CountKmerFromSeg(int n, std::ofstream &kmer_site_out_file) const {
+    void KmerCounter::CountKmerFromSeg(int n, std::ofstream &kmer_site_out_file, uint64_t &total_collsion_cnt, uint64_t &max_collsion_cnt, uint64_t &new_node_cnt)  const{
         Segment seg;
         Kmer kmer;
         CompressedKmer compressed_kmer(gfa_reader->param.kmer_width);
@@ -76,7 +88,7 @@ namespace gjfish {
                     // timer
                     // clock_t add_start = clock();
                     coder->Encode(kmer, compressed_kmer);
-                    ht->add_kmer(n, compressed_kmer);
+                    ht->add_kmer(n, compressed_kmer, new_node_cnt, total_collsion_cnt, max_collsion_cnt);
                     // t0 += clock() - add_start;
 
                     // kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
@@ -96,7 +108,7 @@ namespace gjfish {
                         kmer.seg_idx = seg.segIdx;
                         kmer.seg_start_site = i;
                         coder->Encode(kmer, compressed_kmer);
-                        ht->add_kmer(n, compressed_kmer);
+                        ht->add_kmer(n, compressed_kmer, new_node_cnt, total_collsion_cnt, max_collsion_cnt);
                         // kmer_site_out_file.write((char*)&(coder->Encode(kmer)->site), sizeof(uint64_t));
                     }
                 }
@@ -154,7 +166,7 @@ namespace gjfish {
         return start;
     }
 
-    void KmerCounter::CountKmerFromSuperSeg(int n, std::ofstream &kmer_site_out_file) const {
+    void KmerCounter::CountKmerFromSuperSeg(int n, std::ofstream &kmer_site_out_file, uint64_t &total_collsion_cnt, uint64_t &max_collsion_cnt, uint64_t &new_node_cnt)  const{
         SuperSeg ss;
         CompressedKmer compressed_kmer(gfa_reader->param.kmer_width);
         Kmer now_kmer;
@@ -184,7 +196,7 @@ namespace gjfish {
                     now_seg++;
                 }
                 coder->Encode(now_kmer, compressed_kmer);
-                ht->add_kmer(n, compressed_kmer);
+                ht->add_kmer(n, compressed_kmer, new_node_cnt, total_collsion_cnt, max_collsion_cnt);
                 // kmer_site_out_file.write((char*)&(coder->Encode(now_kmer)->site), sizeof(uint64_t));
             }
         }
@@ -215,7 +227,7 @@ namespace gjfish {
                         now_seg++;
                     }
                     coder->Encode(now_kmer, compressed_kmer);
-                    ht->add_kmer(n, compressed_kmer);
+                    ht->add_kmer(n, compressed_kmer, new_node_cnt, total_collsion_cnt, max_collsion_cnt);
                     // kmer_site_out_file.write((char*)&(coder->Encode(now_kmer)->site), sizeof(uint64_t));
                 }
             }

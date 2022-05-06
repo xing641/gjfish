@@ -48,8 +48,16 @@ int main(int argc, char **argv)
     std::cout << "线程" << param.threads_count 
               << " 哈希函数：" << param.hash_function
               << " K值：" << param.k
-              << " 总共花费时间" << double(duration.count()) * std::chrono::microseconds::period::num /
-                                          std::chrono::microseconds::period::den << "s" << std::endl;
+              << " 总共花费时间\n" << double(duration.count()) * std::chrono::microseconds::period::num /
+                                          std::chrono::microseconds::period::den << std::endl;
+
+    uint64_t total_collsion = 0;
+    uint64_t total_node = 0;
+    for (int i = 0; i < param.threads_count; i++){
+        total_collsion += counter->total_collsion_cnt[i];
+        total_node += counter->new_node_cnt[i];
+    }
+    // std::cout << "冲突次数: " << total_collsion << " 总节点数： " << total_node << std::endl;
     // counter->ExportHashTable();
     // counter->ImportHashTable("/");
     // delete counter;

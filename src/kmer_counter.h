@@ -33,6 +33,10 @@ namespace gjfish {
         MemAllocator* ma;
         Coder* coder;
 
+        uint64_t* total_collsion_cnt;
+        uint64_t* max_collsion_cnt;
+        uint64_t* new_node_cnt;
+
         BufferQueue<Segment> *seg_buffer_queue;
         BufferQueue<SuperSeg> *super_seg_buffer_queue;
         void init_seg_buffer_queue();
@@ -55,9 +59,9 @@ namespace gjfish {
          *
          * */
         // 2. 从segment中生成kmer并计算
-        void CountKmerFromSeg(int n, std::ofstream &kmer_site_out_file) const;
+        void CountKmerFromSeg(int n, std::ofstream &kmer_site_out_file, uint64_t &total_collsion_cnt, uint64_t &max_collsion_cnt, uint64_t &new_node_cnt) const;
         // 3. 从superseg中生成kmer并计算
-        void CountKmerFromSuperSeg(int n, std::ofstream &kmer_site_out_file) const;
+        void CountKmerFromSuperSeg(int n, std::ofstream &kmer_site_out_file, uint64_t &total_collsion_cnt, uint64_t &max_collsion_cnt, uint64_t &new_node_cnt) const;
         [[nodiscard]] std::vector<Kmer> ProduceKmerFromSuperSeg(SuperSeg ss) const;
         int FindKmerStart(int n, std::string &seq) const;
 
