@@ -57,6 +57,43 @@ int main(int argc, char **argv)
         total_collsion += counter->total_collsion_cnt[i];
         total_node += counter->new_node_cnt[i];
     }
+
+    uint64_t max = 0;
+    uint64_t total_kmer = 0;
+    uint64_t unique_kmer = 0;
+    int histogram[1000] = {0};
+    for (uint64_t i = 0; i < param.threads_count; i++){
+        uint64_t start = counter->ht->blocks[i]->start_id;
+        // uint64_t end = counter->ht->blocks[i]->next_id;            
+        // std::cout << "start: " << start << std::endl;
+        // std::cout << "end: " << end << std::endl;
+        uint64_t end = counter->ht->blocks[i]->end_id;
+
+        for (uint64_t j = start; j < end; j++) {
+            gjfish::Node* node = counter->ht->get_node(j);
+            // if (j < start + 100){
+            //     std::cout << j << ". ";
+            //     std::cout << counter->coder->DecodeKmer(node->kmer) << " : ";
+            //     std::cout << node->cnt << std::endl;
+            // }
+            if (node->cnt < 1000 && node->cnt > 0) {
+                histogram[node->cnt]++;
+            }
+            if (node->cnt > max) {
+                max = node->cnt;
+            }
+            total_kmer++;
+            if(node->cnt == 1)unique_kmer++;
+        }
+    }
+    for (int i = 1; i < 1000; i++) {
+        std::cout << i << " : " << histogram[i] << std::endl;
+    }
+
+    std::cout << "最大k-mer个数: " << max << std::endl;
+    std::cout << "总k-mer个数: " << total_kmer << std::endl;
+    std::cout << "唯一k-mer个数: " << unique_kmer << std::endl;
+
     // std::cout << "冲突次数: " << total_collsion << " 总节点数： " << total_node << std::endl;
     // counter->ExportHashTable();
     // counter->ImportHashTable("/");

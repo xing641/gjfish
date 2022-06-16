@@ -88,6 +88,7 @@ namespace gjfish {
                     // timer
                     // clock_t add_start = clock();
                     coder->Encode(kmer, compressed_kmer);
+                    // std::cout << "[debug] to be inserted kmer: " << kmer.sequence << std::endl;
                     ht->add_kmer(n, compressed_kmer, new_node_cnt, total_collsion_cnt, max_collsion_cnt);
                     // t0 += clock() - add_start;
 

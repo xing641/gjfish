@@ -9,6 +9,7 @@
 #include "mem_allocator.h"
 #include <mutex>
 #include <atomic>
+#include <algorithm>
 
 namespace gjfish{
     class Kmer;
@@ -92,6 +93,8 @@ namespace gjfish{
         uint64_t hash64shift(uint64_t *str);
         uint64_t MurmurHash3Mixer(uint64_t *str);
 
+        std::string DecodeKmer(uint64_t* compressed_seq);
+
     private:
         uint64_t table_capacity = 0;
         std::mutex mu;
@@ -101,7 +104,6 @@ namespace gjfish{
     };
     static bool is_prime_number(uint64_t n);
 }
-
 
 
 #endif //SRC_STABLE_LOCKFREE_HASH_MAP_H

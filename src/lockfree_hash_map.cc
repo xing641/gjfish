@@ -1,4 +1,4 @@
-//
+// mmjjjj//
 // Created by user1 on 2021/11/23.
 //
 
@@ -46,7 +46,6 @@ namespace gjfish{
             blocks[i]->synced = false;
         }
 
-        pthread_barrier_init(&(barrier), NULL, (unsigned int)param.threads_count);
     }
 
     LockFreeHashTable::~LockFreeHashTable() {
@@ -162,6 +161,8 @@ namespace gjfish{
             new_node_cnt++;
             Node* node = get_node(node_id);
             if (is_the_same_kmer(node->kmer, kmer)) {
+                // std::cout << "[debug] is_same, node_id: " << node_id << ", kmer: " << DecodeKmer(kmer) << std::endl;
+                // std::cout << std::endl;
                 uint32_t count;
                 do {
                     count = node->cnt;
@@ -183,6 +184,7 @@ namespace gjfish{
 
         if (!(block->synced) && (block->current_id == 0)) {
             block->current_id = polling_request_node(n);
+            // std::cout << "[debug] polling_request_node: " << block->current_id << std::endl;
             if (block->current_id == 0) {
                 keys_locked = true;
             }
@@ -201,6 +203,8 @@ namespace gjfish{
         size_t table_idx = get_hashcode(compressed_kmer.kmer);
 
         uint64_t * collision_list = &(table[table_idx]);
+        // std::cout << "[debug] collision_list: " << collision_list << std::endl;
+
         uint64_t node_id = collision_list_add_kmer(&collision_list, compressed_kmer.kmer, new_node_cnt);
 
         // 更新操作
@@ -223,20 +227,28 @@ namespace gjfish{
         copy_kmer(node->kmer, compressed_kmer.kmer);
         node->cnt = 1;
         node->next = 0;
+        // std::cout << "[debug] insert a new kmer: " << DecodeKmer(node->kmer) << " : " << node->cnt << std::endl;
 
         do {
             node_id = collision_list_add_kmer(&collision_list, compressed_kmer.kmer, new_node_cnt);
             if (node_id != 0) {
                 // Mark the node invalid.
                 node->cnt = 0;
+                // std::cout << "[debug] current_id: " << block->current_id << std::endl;
+                // std::cout << "[debug] collision_list: " << *collision_list << std::endl;
                 return true;
             }
+            // std::cout << "[debug] collision_list: " << *collision_list << std::endl;
+            // std::cout << "[debug] node_id: " << node_id << std::endl;
+            // std::cout << "[debug] current_id: " << block->current_id << std::endl;
         } while (!__sync_bool_compare_and_swap(collision_list, node_id, block->current_id));
-
+        // std::cout << "[debug] collision_list: " << *collision_list << std::endl;
         block->current_id = 0;
-
+        // std::cout << std::endl;
         return true;
     }
+
+    
 
     uint64_t LockFreeHashTable::max_prime_number(uint64_t limit){
         uint64_t n = limit;
@@ -414,6 +426,18 @@ namespace gjfish{
             key ^= (key >> 31);
         }
         return key;
+    }
+
+    std::string LockFreeHashTable::DecodeKmer(uint64_t* compressed_seq) {
+        std::string str_kmer;
+        for (int i = 1 - 1; i >= 0; i--) {
+            for (int j = ((i == 1 - 1) ? 28-1*32 + 32: 32); j > 0; j--){
+                str_kmer.push_back(DECODE_MER_TABLE[compressed_seq[i] & 3]);
+                compressed_seq[i] >>= 2;
+            }
+        }
+        std::reverse(str_kmer.begin(), str_kmer.end());
+        return str_kmer;
     }
 }
 
