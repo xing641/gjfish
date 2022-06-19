@@ -18,6 +18,7 @@ std::string RC(const std::string &sequence) {
     return res;
 }
 
+// graph genome generation
 int main(int argc, char **argv)
 {
     gjfish::Param param; // 从外部输入

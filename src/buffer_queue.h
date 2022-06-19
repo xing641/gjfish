@@ -12,7 +12,7 @@
 #include <queue>
 namespace gjfish {
     template<class Type>
-/*消息队列实现*/
+/*缓冲队列实现*/
 
     class BufferQueue {
         BufferQueue &operator=(const BufferQueue &) = delete;
